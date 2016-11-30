@@ -1,49 +1,8 @@
-<div class="connection-block" ng-show="istruewhat">
-    <h1>New Connection</h1>
-    <div class="connetion-form">
-        <div class="row">
-            <div class="item">
-                <label>Server/Host</label>
-                <input type="text" placeholder="http://server123.host.com">
-            </div>
-            <div class="item">
-                <label>Username</label>
-                <input type="text" placeholder="webadmin">
-            </div>
-            <div class="item">
-                <label>Password</label>
-                <input type="password" placeholder="••••••••">
-            </div>
-            <div class="item">
-                <label>Port</label>
-                <input type="number" placeholder="21">
-            </div>
-        </div>
-        <div class="row">
-            <div class="item chx">
-                <label>Favorite Name</label>
-                <input type="text" placeholder="Personal Website">
-            </div>
-            <div class="item chx">
-                <label><i class="ion-checkmark"></i>Always ask for password</label>
-            </div>
-            <div class="item chx">
-                <label><i class="ion-checkmark"></i>Save to favorites</label>
-            </div>
-            <div class="item button">
-                <button>Connect</button>
-            </div>
-        </div>
-
-
-    </div>
-</div>
-
-
 <div class="workspace" ng-class="{consolePadding : fullConsole}">
 
-
     <div class="workspace-nav">
+
+        <i class="ion-navicon" ng-click="showingMenu = true"></i>
 
         <!-- <input class="search" type="text" placeholder="Search" ng-model="searchFiles"> -->
 
@@ -86,7 +45,83 @@
 </div>
 
 
-<div class="rename" ng-show="showingRename">
+
+
+<!--
+MENU
+ -->
+<div class="menu slideTop" ng-show="showingMenu">
+
+    <a href="http://ffftp.site" target="_blank" class="menu-branding"><img src="app/visuals/ffftp200w.png"></a>
+
+    <i class="ion-ios-close-empty close-menu" ng-click="showingMenu = false" ng-show="ftp"></i>
+
+    <form class="connection-form" ng-submit="connect()">
+        <div class="form-row">
+            <div class="form-item">
+                <input type="text" ng-model="ftpHost" name="ftp-host" placeholder="ftp.yourwebsite.com">
+                <label for="ftp-host">Host / Server</label>
+            </div>
+            <div class="form-item">
+                <input type="text" ng-model="ftpUsername" name="ftp-username" placeholder="ftpadmin">
+                <label for="ftp-username">Username</label>
+            </div>
+            <div class="form-item">
+                <input type="password" ng-model="ftpPassword" name="ftp-password" placeholder="••••••••">
+                <label for="ftp-username">Password</label>
+            </div>
+            <div class="form-item">
+                <input type="number" ng-model="ftpPort" name="ftp-port" placeholder="21">
+                <label for="ftp-port">Port</label>
+            </div>
+        </div>
+
+        <div class="form-row flex-end ng-fade" ng-show="saveFavorite">
+            <div class="form-item">
+                <input type="text" ng-model="favoriteName" name="favoritename" placeholder="mywebsite.com">
+                <label for="favorite-name">Favorite Name</label>
+            </div>
+        </div>
+
+        <div class="form-row flex-end">
+            <div class="form-item">
+                <button type="button" class="favorites" ng-click="saveFavorite = !saveFavorite" ng-class="{'active': saveFavorite}">
+                    <i class="ion-close" ng-class="{'ion-close':!saveFavorite, 'ion-checkmark': saveFavorite}"></i>Save to favorites
+                </button>
+            </div>
+            <div class="form-item">
+                <button type="submit">Connect</button>
+            </div>
+        </div>
+
+        <!-- <div class="form-row flex-end">
+            <div class="form-item">
+                <button type="button" ng-click="deleteFavs()">Clear</button>
+            </div>
+        </div> -->
+
+        <div class="favorites-list ng-fade" ng-show="favorites.length">
+            <div class="favorites-header">Favorites</div>
+            <span class="favorite" ng-repeat="item in favorites track by $index">
+                <span class="name" ng-click="loadFavorite($index)">{{item.name}}</span>
+                <span class="delete" ng-click="deleteFavorite($index)">delete</span>
+            </span>
+        </div>
+
+    </form>
+
+
+
+
+    <div class="menu-footer">Copyright 2016 nnnorth.com - get @ me if you want features added - <a href="mailto:mitch@mitchsco">mitch@mitchs.co</a></div>
+
+
+</div>
+
+<!--
+    MODALS
+ -->
+<div class="rename zoom" ng-show="showingRename">
     <form ng-submit="renameFile()">
         <input type="text" ng-model="fileRenameInput" show-focus="showingRename">
         <div class="modal-buttons">
@@ -96,7 +131,7 @@
     </form>
 </div>
 
-<div class="newfolder" ng-show="showingNewFolder">
+<div class="newfolder zoom" ng-show="showingNewFolder">
     <form ng-submit="newFolder()">
         <input type="text" ng-model="newFolderName" placeholder="New Folder Name" show-focus="showingNewFolder">
         <div class="modal-buttons">
@@ -106,7 +141,7 @@
     </form>
 </div>
 
-<div class="confirmdelete" ng-show="showingConfirmDelete">
+<div class="confirmdelete zoom" ng-show="showingConfirmDelete">
     <form ng-submit="deleteFile()">
         <h1>Are you sure?</h1>
         <div class="modal-buttons center">
@@ -117,11 +152,11 @@
 </div>
 
 
-<div class="console-preview {{consoleMessageClass}}" ng-show="!fullConsole" ng-click="openConsole()">
+<div class="console-preview {{consoleMessageClass}} slideBottom" ng-show="!fullConsole" ng-click="openConsole()">
     <i class="ion-code-working"></i> {{consoleMessage}}
     <span class="console-unread">{{consoleUnread}}</span>
 </div>
-<div class="console" ng-show="fullConsole">
+<div class="console slideBottom" ng-show="fullConsole">
     <div class="console-minimize" ng-click="fullConsole = false"><i class="ion-android-arrow-dropdown"></i></div>
     <div class="console-messages">
         <div class="line {{line.color}}" ng-repeat="line in consoleMessages track by $index">{{line.message}}</div>

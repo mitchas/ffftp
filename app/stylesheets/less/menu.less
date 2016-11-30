@@ -1,0 +1,252 @@
+// "main": "main.less"
+
+
+.menu{
+    display: flex;
+    position: fixed;
+    justify-content: space-between;
+    flex-direction: column;
+    text-align: center;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    padding: 10px 0;
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    z-index: 5000;
+    background-color: @white;
+
+    .menu-branding{
+        display: block;
+        margin: 0 auto;
+        height: auto;
+        width: 80px;
+        img{
+            width: 100%;
+            height: auto;
+        }
+    }
+
+
+    i.close-menu{
+        display: flex;
+        width: 40px;
+        height: 40px;
+        justify-content: center;
+        flex-direction: column;
+        font-size: 38pt;
+        text-align: center;
+        color: @black;
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        transition: @transition;
+
+        &:hover{
+            cursor: pointer;
+            color: fade(@black, 50%);
+            transition: @transition;
+        }
+    }
+
+
+    // Connection form
+    form.connection-form{
+        display: block;
+        width: 100%;
+
+        div.form-row{
+            display: flex;
+            width: 100%;
+            justify-content: center;
+            box-sizing: border-box;
+            padding: 10px 35px;
+            max-width: 850px;
+            margin: 0 auto;
+
+            &.flex-end{
+                justify-content: flex-end;
+            }
+
+            div.form-item{
+                label{
+                    display: block;
+                    box-sizing: border-box;
+                    padding: 4px 0 0 0;
+                    font-weight: 400;
+                    width: 90%;
+                    margin: 0 auto;
+                    font-size: 10pt;
+                    text-transform: lowercase;
+                    color: fade(@black, 50%);
+                }
+                input{
+                    display: block;
+                    width: 90%;
+                    max-width: 280px;
+                    margin: 0 auto;
+                    box-sizing: border-box;
+                    text-align: center;
+                    padding: 12px 8px;
+                    font-weight: 300;
+                    border: 1px solid fade(@black, 50%);
+                    border-radius: 4px;
+
+                    &[type='number']{
+                        padding-left: 35px;
+                    }
+                }
+
+                button{
+                    .button();
+
+                    &.favorites{
+                        background-color: fade(@black, 10%);
+                        color: fade(@black, 50%);
+                        margin-right: 20px;
+
+                        i{
+                            position: relative;
+                            vertical-align: middle;
+                            padding-right: 5px;
+                            width: 14px;
+                            display: inline-block;
+                        }
+                        &:hover{
+                            background-color: fade(@blue, 30%);
+                        }
+                        &.active{
+                            background-color: @blue;
+                            color: @white;
+                            &:hover{
+                                background-color: darken(@blue, 5%);
+                                color: @white;
+                            }
+                        }
+                    }
+
+                    &:disabled{
+                        background-color: @red;
+                        &:hover{
+                            background-color: @red;
+                            cursor: default;
+                        }
+                    }
+
+                }
+            }
+        }
+    }
+
+    // Favorites
+    .favorites-list{
+        display: block;
+        text-align: left;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px 45px;
+        max-width: 850px;
+        margin: 0 auto;
+
+        .favorites-header{
+            display: block;
+            box-sizing: border-box;
+            padding: 4px 0 15px 0;
+            font-weight: 400;
+            width: 100%;
+            margin: 0 auto;
+            font-size: 14pt;
+            text-transform: lowercase;
+            color: fade(@black, 50%);
+        }
+
+        .favorite{
+            display: inline-block;
+            box-sizing: border-box;
+            letter-spacing: 1px;
+            color: @white;
+            border-radius: 4px;
+            font-size: 12pt;
+            text-transform: lowercase;
+            letter-spacing: -0.5px;
+            margin: 0 15px 25px 0;
+            transition: @transition;
+            height: 35px;
+
+            .name{
+                background-color: @blue;
+                display: block;
+                border-radius: 4px;
+                width: auto;
+                height: auto;
+                box-sizing: border-box;
+                padding: 12px 25px 12px 25px;
+                &:hover{
+                    cursor: pointer;
+                    background-color: darken(@blue, 5%);
+                    color: @white;
+                    transition: @transition;
+                }
+            }
+            .delete{
+                width: 100%;
+                display: block;
+                color: fade(@black, 30%);
+                font-size: 10pt;
+                box-sizing: border-box;
+                padding: 2px 0 0 0;
+                text-align: center;
+                transition: @transition;
+                text-align: center;
+                &:hover{
+                    cursor: pointer;
+                    color: @red;
+                    transition: @transition;
+                }
+            }
+
+        }
+
+        .edit-favorites{
+            display: block;
+            box-sizing: border-box;
+            padding: 25px 0 0 0;
+
+            button{
+                .button();
+                background-color: fade(@black, 10%);
+                color: fade(@black, 50%);
+                &:hover{
+                    background-color: fade(@black, 15%);
+                }
+            }
+        }
+    }
+
+
+
+    div.menu-footer{
+        display: block;
+        width: 100%;
+        text-align: center;
+        box-sizing: border-box;
+        padding: 6px 0;
+        font-size: 8pt;
+        font-weight: 600;
+        color: fade(@black, 30%);
+        text-transform: lowercase;
+        background-color: @white;
+        a{
+            transition: @transition;
+            color: fade(@blue, 50%);
+            &:hover{
+                color: @blue;
+                transition: @transition;
+            }
+        }
+    }
+
+
+
+}

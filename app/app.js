@@ -1,6 +1,7 @@
 var dirTree = require('directory-tree');
 var JSFtp = require("jsftp");
 JSFtp = require('jsftp-rmr')(JSFtp);
+var storage = require('electron-json-storage');
 
 var app = angular.module('app', ['ngRoute', 'ngMaterial', 'ngAnimate']);
 app.config(['$routeProvider', function ($routeProvider) {

@@ -1,5 +1,5 @@
-(function () {
-    'use strict';
+app.controller('menuCtrl', ['$scope', '$timeout', function($scope, $timeout){
+
 
     // Module automatically included (only) in the Renderer process (Electron)
     //noinspection NodeRequireContents
@@ -7,29 +7,29 @@
     var Menu = remote.Menu;
 
     var template = [
-        {
-            label: 'App',
-            submenu: [
-                {
-                    label: 'Exit',
+        {label: 'ffftp',
+            submenu: [{
+                    label: 'about',
+                    accelerator: 'CmdOrCtrl+H',
+                    click: function(item, focusedWindow) {
+                        window.open('http://ffftp.site')
+                    }
+                },{
+                    label: 'close',
                     accelerator: 'CmdOrCtrl+Q',
                     role: 'close'
                 }
             ]
-        },
-        {
-            label: 'Dev',
-            submenu: [
-                {
-                    label: 'Reload',
+        },{
+            label: 'action',
+            submenu: [{
+                    label: 'connect',
                     accelerator: 'CmdOrCtrl+R',
-                    click: function(item, focusedWindow) {
-                        if (focusedWindow)
-                            focusedWindow.reload();
+                    click: function() {
+                        alert("Ayee");
                     }
-                },
-                {
-                    label: 'Toggle Full Screen',
+                },{
+                    label: 'Full Screen',
                     accelerator: (function() {
                         if (process.platform == 'darwin')
                             return 'Ctrl+Command+F';
@@ -40,20 +40,43 @@
                         if (focusedWindow)
                             focusedWindow.setFullScreen(!focusedWindow.isFullScreen());
                     }
-                },
-                {
-                    label: 'Toggle Developer Tools',
+                }
+            ]
+        },{
+            label: 'view',
+            submenu: [{
+                    label: 'Reload',
+                    accelerator: 'CmdOrCtrl+R',
+                    click: function(item, focusedWindow) {
+                        if (focusedWindow)
+                            focusedWindow.reload();
+                    }
+                },{
+                    label: 'Full Screen',
                     accelerator: (function() {
                         if (process.platform == 'darwin')
-                            return 'Alt+Command+I';
+                            return 'Ctrl+Command+F';
                         else
-                            return 'Ctrl+Shift+I';
+                            return 'F11';
                     })(),
                     click: function(item, focusedWindow) {
                         if (focusedWindow)
-                            focusedWindow.toggleDevTools();
+                            focusedWindow.setFullScreen(!focusedWindow.isFullScreen());
                     }
                 }
+                // {
+                //     label: 'Toggle Developer Tools',
+                //     accelerator: (function() {
+                //         if (process.platform == 'darwin')
+                //             return 'Alt+Command+I';
+                //         else
+                //             return 'Ctrl+Shift+I';
+                //     })(),
+                //     click: function(item, focusedWindow) {
+                //         if (focusedWindow)
+                //             focusedWindow.toggleDevTools();
+                //     }
+                // }
             ]
         }
     ];
@@ -62,4 +85,4 @@
     var menu = Menu.buildFromTemplate(template);
     Menu.setApplicationMenu(menu);
 
-})();
+}]);

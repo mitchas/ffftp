@@ -4,20 +4,108 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
     $scope.path = ".";
     $scope.emptyMessage = "Loading...";
     $scope.fullConsole = false;
+    $scope.showingMenu = true;
     $scope.consoleMessage = "Click to expand console.";
+
+    $scope.editingFavorites = false;
 
     $scope.fileSelected = false;
 
 
     //
+    // Connecting to ftp
+    //
+    $scope.saveFavorite = false;
+
+    // $scope.ftpHost = "server227.web-hosting.com";
+    // $scope.ftpPort = 21;
+    // $scope.ftpUsername = "typitwey";
+    // $scope.ftpPassword = "GrJ0P_Lf4nmmX";
+
+
+    // Load Favorites
+    $scope.favorites = [];
+    storage.has('favorites', function(error, hasKey) {
+        if (error) throw error;
+        if (hasKey) {
+            storage.get('favorites', function(error, data) {
+                if (error) throw error;
+                $timeout(function() {
+                    $scope.favorites = data;
+                    console.log("FAVORITES");
+                    console.log(data);
+                }, 0);
+
+            });
+        }else{
+            console.log("No favs");
+        }
+    });
+
+    // On favorite click
+    $scope.loadFavorite = function(index){
+        $scope.ftpHost = $scope.favorites[index].host;
+        $scope.ftpPort = $scope.favorites[index].port;
+        $scope.ftpUsername = $scope.favorites[index].user;
+        $scope.ftpPassword = $scope.favorites[index].pass;
+        $scope.favoriteName = $scope.favorites[index].name;
+        $scope.connect();
+    }
+    $scope.deleteFavorite = function(index){
+        $scope.favorites.splice(index, 1);
+        $scope.saveFavoritesToStorage();
+    }
+
+
+
+
+    //
     // Connect to ftp
     //
-    const  ftp = new JSFtp({
-        host: "server227.web-hosting.com",
-        port: 21,
-        user: "typitwey",
-        pass: "GrJ0P_Lf4nmmX"
-    });
+    $scope.connect = function(){
+        $scope.showingMenu = false;
+
+        if($scope.saveFavorite){
+            $scope.newFavorite = {
+                name: $scope.favoriteName,
+                host: $scope.ftpHost,
+                port: $scope.ftpPort,
+                user: $scope.ftpUsername,
+                pass: $scope.ftpPassword
+            }
+            $scope.favorites.push($scope.newFavorite);
+            $scope.saveFavoritesToStorage();
+        }
+
+        $scope.saveFavorite = false;
+
+
+        // Connect
+        $scope.ftp = new JSFtp({
+            host: $scope.ftpHost,
+            port: $scope.ftpPort,
+            user: $scope.ftpUsername,
+            pass: $scope.ftpPassword
+        });
+        $scope.console("white", "Connected to " + $scope.ftpHost);
+
+        // Start Scripts
+        $scope.changeDir();
+        $scope.splitPath();
+    }
+
+    $scope.saveFavoritesToStorage = function(){
+        storage.set('favorites', $scope.favorites, function(error) {
+            if (error) throw error;
+        });
+    }
+    $scope.deleteFavs = function(){
+        storage.clear(function(error) {
+            if (error) throw error;
+        });
+    }
+
+
 
 
     //
@@ -28,7 +116,7 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
             return;
         }else{
             $scope.fileSelected = false;
-            ftp.ls($scope.path, function(err, res) {
+            $scope.ftp.ls($scope.path, function(err, res) {
                 $timeout(function() {
                     $scope.files = res;
                     $scope.splitPath();
@@ -111,7 +199,7 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
     $scope.showingNewFolder = false;
     $scope.newFolder = function(){
         $scope.showingNewFolder = false;
-        ftp.raw('mkd', $scope.path + "/" + $scope.newFolderName, function(err, data) {
+        $scope.ftp.raw('mkd', $scope.path + "/" + $scope.newFolderName, function(err, data) {
             $scope.changeDir();
             if(err){$scope.console("red", err)}
             else{$scope.console("white", data.text)}
@@ -129,14 +217,14 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
         $scope.showingConfirmDelete = false;
         console.log("DELETING " + $scope.path + "/" + $scope.selectedFileName);
         if($scope.selectedFileType == 0){ // 0 is file
-            ftp.raw('dele', $scope.path + "/" + $scope.selectedFileName, function(err, data) {
+            $scope.ftp.raw('dele', $scope.path + "/" + $scope.selectedFileName, function(err, data) {
                 if(err){return $scope.console("red", err);}
                 $scope.changeDir();
                 $scope.console("green", data.text);
             });
         }else if($scope.selectedFileType == 1){ // Everything else is folder
-            ftp.rmr($scope.path + "/" + $scope.selectedFileName, function (err) {
-                ftp.raw('rmd', $scope.path + "/" + $scope.selectedFileName, function(err, data) {
+            $scope.ftp.rmr($scope.path + "/" + $scope.selectedFileName, function (err) {
+                $scope.ftp.raw('rmd', $scope.path + "/" + $scope.selectedFileName, function(err, data) {
                     if(err){return $scope.console("red", err);}
                     $scope.changeDir();
                     $scope.console("green", data.text);
@@ -154,7 +242,7 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
             $scope.fileRenameInput = $scope.selectedFileName;
             $scope.showingRename = true;
         }else{
-            ftp.rename($scope.selectedFileName, $scope.fileRenameInput, function(err, res) {
+            $scope.ftp.rename($scope.path + "/" + $scope.selectedFileName, $scope.path + "/" + $scope.fileRenameInput, function(err, res) {
                 if (!err){
                     $scope.showingRename = false;
                     $scope.console("green", "Renamed " + $scope.selectedFileName + " to " + $scope.fileRenameInput);
@@ -171,7 +259,7 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
     // Download a file
     //
     $scope.downloadFile = function(){
-        ftp.get($scope.selectedFilePath, function(hadErr) {
+        $scope.ftp.get($scope.selectedFilePath, function(hadErr) {
             if (hadErr){
                 $scope.console("red", "There was an error retrieving the file.");
             }else{
@@ -248,7 +336,7 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
             $scope.dirToCreate = uploadpath +  localpath.replace($scope.baselocalpath, "").replace(/\\/g,"/");
             $scope.console("white", "Creating folder " + $scope.dirToCreate + "...")
 
-            ftp.raw('mkd', $scope.dirToCreate, function(err, data) {
+            $scope.ftp.raw('mkd', $scope.dirToCreate, function(err, data) {
                 // $scope.changeDir();
                 if(err){$scope.console(err);}
                 else{$scope.console(data.text);}
@@ -270,7 +358,7 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
             $scope.fileToUpload = uploadpath +  localpath.replace($scope.baselocalpath, "").replace(/\\/g,"/");
             $scope.console("white", "Uploading " + $scope.fileToUpload + "...");
 
-            ftp.put(localpath, $scope.fileToUpload, function(hadError) {
+            $scope.$scope.ftp.put(localpath, $scope.fileToUpload, function(hadError) {
                 if (!hadError){
                     $scope.console("white", "Successfully uploaded " + localpath + " to " + $scope.fileToUpload);
                 }else{
@@ -311,11 +399,7 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
 
 
 
-    //
-    // Start Scripts
-    //
-    $scope.changeDir();
-    $scope.splitPath();
+
 
 
     //
@@ -326,8 +410,9 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
         if (e.keyCode == 27){ // esc
             $timeout(function() {
                 console.log("esc pressed");
-                if(!$scope.showingRename && !$scope.showingNewFolder){$scope.fullConsole = false;}
+                if(!$scope.showingRename && !$scope.showingNewFolder && !$scope.showingMenu){$scope.fullConsole = false;}
                 $scope.showingRename = false;
+                $scope.showingMenu = false;
                 $scope.showingNewFolder = false;
             }, 0);
         }
@@ -339,6 +424,95 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
             }, 0);
         }
     }
+
+
+
+
+    //
+    // Electron Menu
+    //
+    var remote = require('electron').remote;
+    var Menu = remote.Menu;
+
+    var template = [
+        {label: 'ffftp',
+            submenu: [{
+                    label: 'about',
+                    accelerator: 'CmdOrCtrl+H',
+                    click: function(item, focusedWindow) {
+                        window.open('http://ffftp.site')
+                    }
+                },{
+                    label: 'close',
+                    accelerator: 'CmdOrCtrl+Q',
+                    role: 'close'
+                }
+            ]
+        },{
+            label: 'action',
+            submenu: [{
+                    label: 'connect',
+                    accelerator: 'CmdOrCtrl+R',
+                    click: function() {
+                        $timeout(function() {$scope.showingMenu = true;}, 0);
+                    }
+                },{
+                        label: 'up directory',
+                        accelerator: 'CmdOrCtrl+U',
+                        click: function() {
+                            if($scope.path == '.'){$scope.console("red", "You are in the root directory.")}
+                                else{$scope.upDir();}
+                        }
+                },{
+                        label: 'new folder',
+                        accelerator: 'CmdOrCtrl+N',
+                        click: function() {
+                            $timeout(function() {$scope.showingNewFolder = true;}, 0);
+                        }
+                }
+            ]
+        },{
+            label: 'view',
+            submenu: [{
+                    label: 'reload',
+                    accelerator: 'CmdOrCtrl+R',
+                    click: function(item, focusedWindow) {
+                        if (focusedWindow)
+                            focusedWindow.reload();
+                    }
+                },{
+                    label: 'full screen',
+                    accelerator: (function() {
+                        if (process.platform == 'darwin')
+                            return 'Ctrl+Command+F';
+                        else
+                            return 'F11';
+                    })(),
+                    click: function(item, focusedWindow) {
+                        if (focusedWindow)
+                            focusedWindow.setFullScreen(!focusedWindow.isFullScreen());
+                    }
+                }
+                // {
+                //     label: 'Toggle Developer Tools',
+                //     accelerator: (function() {
+                //         if (process.platform == 'darwin')
+                //             return 'Alt+Command+I';
+                //         else
+                //             return 'Ctrl+Shift+I';
+                //     })(),
+                //     click: function(item, focusedWindow) {
+                //         if (focusedWindow)
+                //             focusedWindow.toggleDevTools();
+                //     }
+                // }
+            ]
+        }
+    ];
+
+
+    var menu = Menu.buildFromTemplate(template);
+    Menu.setApplicationMenu(menu);
 
 
 }]);
