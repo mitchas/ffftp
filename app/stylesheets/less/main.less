@@ -3,7 +3,9 @@
 @import 'reset.less';
 @import 'variables.less';
 @import 'modals.less';
+@import 'menu.less';
 @import 'console.less';
+@import 'animations.less';
 
 *, *:hover, *:active, *:focus{
     outline: none;
@@ -37,111 +39,19 @@ div.app-wrapper{
 
 
 
-div.connection-block{
-    display: block;
-    width: 100%;
-    background-color: @black;
-    box-sizing: border-box;
-    padding: 45px 35px 35px 35px;
-    color: @white;
-
-    h1{
-        padding: 0 0 0 16px;
-    }
-
-    div.connetion-form{
-        box-sizing: border-box;
-        padding: 15px 0 0 0;
-
-        div.row{
-            display: flex;
-            justify-content: space-between;
-            div.item{
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                width: 100%;
-                box-sizing: border-box;
-                padding: 16px;
-                vertical-align: middle;
-
-                label{
-                    display: block;
-                    text-transform: uppercase;
-                    letter-spacing: 1.5px;
-                    font-weight: 500;
-                    box-sizing: border-box;
-                    padding: 0 0 4px 0;
-                    font-size: 10pt;
-                    i{
-                        padding-right: 10px;
-                    }
-                }
-
-                input{
-                    display: block;
-                    width: 100%;
-                    box-sizing: border-box;
-                    padding: 10px 0;
-                    background-color: transparent;
-                    color: @white;
-                    font-weight: 300;
-                    letter-spacing: 0.5px;
-                    border: none;
-                    border-bottom: 1px solid fade(@white, 50%);
-                    transition: @transition;
-                    &:hover{
-                        transition: @transition;
-                        border-bottom: 1px solid fade(@white, 75%);
-                    }
-                    &:focus{
-                        transition: @transition;
-                        border-bottom: 1px solid fade(@white, 75%);
-                    }
-                    &::-webkit-input-placeholder {
-                        color: fade(@white, 70%);
-                    }
-                }
-
-                &.button{
-                    text-align: right;
-
-                    button{
-                        display: block;
-                        float: right;
-                        background-color: transparent;
-                        border: 1px solid @white;
-                        color: @white;
-                        border-radius: 10px;
-                        text-transform: uppercase;
-                        letter-spacing: 1.5px;
-                        font-size: 10pt;
-                        font-weight: 500;
-                        box-sizing: border-box;
-                        padding: 14px;
-                    }
-                }
-
-            }
-        }
-
-    }
-}
-
-
 
 
 
 div.workspace{
     box-sizing: border-box;
     // padding: 140px 280px 25px 5%;
-    padding: 140px 5% 25px 5%;
+    padding: 110px 5% 25px 5%;
     max-width: 1200px;
     margin: 0 auto;
     display: flex;
 
     &.consolePadding{
-        padding: 140px 5% 220px 5%;
+        padding-bottom: 220px !important;
     }
 
     div.workspace-nav{
@@ -154,6 +64,28 @@ div.workspace{
         z-index: 250;
         position: fixed;
         background-color: fade(@white, 80%);
+
+        .ion-navicon{
+            display: flex;
+            width: 40px;
+            height: 40px;
+            justify-content: center;
+            flex-direction: column;
+            font-size: 24pt;
+            text-align: center;
+            background-color: @white;
+            color: @black;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            transition: @transition;
+
+            &:hover{
+                cursor: pointer;
+                color: fade(@black, 50%);
+                transition: @transition;
+            }
+        }
 
         div.dir{
             display: block;
@@ -372,11 +304,31 @@ div.workspace{
     }
 }
 
-
-
-
-
-
 button:disabled{
     background-color: red;
+}
+
+
+
+//
+// Universal elements
+//
+.button(){
+    font-size: 12pt;
+    text-transform: lowercase;
+    letter-spacing: -0.5px;
+    font-weight: 400;
+    color: @white;
+    background-color: darken(@green, 6%);
+    border: none;
+    box-sizing: border-box;
+    padding: 8px 16px;
+    transition: @transition;
+    border-radius: 4px;
+    margin-right: 10px;
+    &:hover{
+        transition: @transition;
+        cursor: pointer;
+        background-color: darken(@green, 12%);
+    }
 }
