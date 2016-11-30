@@ -1,27 +1,18 @@
 {
-  "name": "electron-angular-material",
-  "version": "1.0.0",
-  "description": "An Electron + AngularJS + Angular Material boilerplate",
+  "name": "ffftp",
+  "version": "0.0.5",
+  "description": "A minimal FTP client built on Electron",
   "main": "main.js",
   "scripts": {
     "start": "electron main.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/thomas-barthelemy/electron-angular-boilerplate.git"
-  },
   "keywords": [
     "Electron",
-    "AngularJS",
-    "Angular Material",
-    "Boilerplate"
+    "FTP",
+    "Windows"
   ],
-  "author": "Thomas Barthelemy",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/thomas-barthelemy/electron-angular-boilerplate/issues"
-  },
-  "homepage": "https://github.com/thomas-barthelemy/electron-angular-boilerplate",
+  "author": "Mitch Samuels",
+  "homepage": "https://ffftp.site",
   "devDependencies": {
     "angular": "^1.5.7",
     "angular-animate": "^1.5.7",
