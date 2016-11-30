@@ -1,0 +1,15 @@
+{
+	"numResults": 1,
+	"creationDate": "2013-12-15 19:21:06",
+	"results": {
+		"test/test_source.html": [
+			{
+				"line": 493,
+				"match": "style"
+			}
+		]
+	},
+	"examinedFiles": [
+		"test/test_source.html"
+	]
+}

@@ -1,0 +1,129 @@
+<div class="connection-block" ng-show="istruewhat">
+    <h1>New Connection</h1>
+    <div class="connetion-form">
+        <div class="row">
+            <div class="item">
+                <label>Server/Host</label>
+                <input type="text" placeholder="http://server123.host.com">
+            </div>
+            <div class="item">
+                <label>Username</label>
+                <input type="text" placeholder="webadmin">
+            </div>
+            <div class="item">
+                <label>Password</label>
+                <input type="password" placeholder="••••••••">
+            </div>
+            <div class="item">
+                <label>Port</label>
+                <input type="number" placeholder="21">
+            </div>
+        </div>
+        <div class="row">
+            <div class="item chx">
+                <label>Favorite Name</label>
+                <input type="text" placeholder="Personal Website">
+            </div>
+            <div class="item chx">
+                <label><i class="ion-checkmark"></i>Always ask for password</label>
+            </div>
+            <div class="item chx">
+                <label><i class="ion-checkmark"></i>Save to favorites</label>
+            </div>
+            <div class="item button">
+                <button>Connect</button>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+
+<div class="workspace" ng-class="{consolePadding : fullConsole}">
+
+
+    <div class="workspace-nav">
+
+        <!-- <input class="search" type="text" placeholder="Search" ng-model="searchFiles"> -->
+
+        <div class="dir">
+            <span class="item" ng-repeat="level in pathArray track by $index">
+                <span ng-if="level == '.'" ng-class="{'current':$last}" ng-click="breadCrumb($index)">
+                    root
+                </span>
+                <span ng-if="level != '.'" ng-class="{'current':$last}" ng-click="breadCrumb($index)">
+                    <i class="ion-chevron-right"></i>
+                    {{level}}
+                </span>
+            </span>
+        </div>
+
+        <div class="workspace-buttons">
+            <button ng-click="upDir()" ng-disabled="path == '.'"><i class="ion-android-arrow-dropup-circle"></i> Up</button>
+            <button ng-click="showingNewFolder = true"><i class="ion-android-folder-open"></i>New Folder</button>
+            <button ng-click="showingConfirmDelete = true" ng-disabled="!fileSelected && !confirmingDelete"><i class="ion-trash-a"></i>Delete</button>
+            <button ng-click="downloadFile()" ng-disabled="!fileSelected"><i class="ion-android-download"></i>Download</button>
+            <button ng-click="renameFile()" ng-disabled="!fileSelected"><i class="ion-edit"></i>Rename</button>
+        </div>
+    </div>
+
+    <div class="file-list">
+        <div class="header">
+            <span class="name">Name</span>
+            <span class="size">Size</span>
+            <span class="time">Date</span>
+        </div>
+        <div class="file" ng-repeat="file in files | orderBy: name |filter:searchFiles as fileSearch" ng-focus="selectTimer(); selectFile(file.name, file.type)" ng-blur="clearSelected()" ng-dblClick="intoDir(file.name)">
+            <span class="name"><i class="ion-android-folder-open" ng-if="file.type == 1"></i><i class="ion-document" ng-if="file.type != 1"></i>{{file.name}}</span>
+            <span class="size">{{file.size | filesize}}</span>
+            <span class="time">{{file.time | date}}</span>
+        </div>
+        <div class="empty-message" ng-hide="fileSearch.length">
+            {{emptyMessage}}
+        </div>
+    </div>
+</div>
+
+
+<div class="rename" ng-show="showingRename">
+    <form ng-submit="renameFile()">
+        <input type="text" ng-model="fileRenameInput" show-focus="showingRename">
+        <div class="modal-buttons">
+            <button class="cancel" type="button" ng-click="showingRename = false">Cancel</button>
+            <button class="proceed" type="submit">Rename</button>
+        </div>
+    </form>
+</div>
+
+<div class="newfolder" ng-show="showingNewFolder">
+    <form ng-submit="newFolder()">
+        <input type="text" ng-model="newFolderName" placeholder="New Folder Name" show-focus="showingNewFolder">
+        <div class="modal-buttons">
+            <button class="cancel" type="button" ng-click="showingNewFolder = false">Cancel</button>
+            <button class="proceed" type="submit">Create</button>
+        </div>
+    </form>
+</div>
+
+<div class="confirmdelete" ng-show="showingConfirmDelete">
+    <form ng-submit="deleteFile()">
+        <h1>Are you sure?</h1>
+        <div class="modal-buttons center">
+            <button class="cancel" type="button" ng-click="showingConfirmDelete = false">Cancel</button>
+            <button class="danger" type="submit" show-focus="showingConfirmDelete">Delete</button>
+        </div>
+    </form>
+</div>
+
+
+<div class="console-preview {{consoleMessageClass}}" ng-show="!fullConsole" ng-click="openConsole()">
+    <i class="ion-code-working"></i> {{consoleMessage}}
+    <span class="console-unread">{{consoleUnread}}</span>
+</div>
+<div class="console" ng-show="fullConsole">
+    <div class="console-minimize" ng-click="fullConsole = false"><i class="ion-android-arrow-dropdown"></i></div>
+    <div class="console-messages">
+        <div class="line {{line.color}}" ng-repeat="line in consoleMessages track by $index">{{line.message}}</div>
+    </div>
+</div>
