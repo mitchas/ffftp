@@ -358,7 +358,7 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
             $scope.fileToUpload = uploadpath +  localpath.replace($scope.baselocalpath, "").replace(/\\/g,"/");
             $scope.console("white", "Uploading " + $scope.fileToUpload + "...");
 
-            $scope.$scope.ftp.put(localpath, $scope.fileToUpload, function(hadError) {
+            $scope.ftp.put(localpath, $scope.fileToUpload, function(hadError) {
                 if (!hadError){
                     $scope.console("white", "Successfully uploaded " + localpath + " to " + $scope.fileToUpload);
                 }else{
