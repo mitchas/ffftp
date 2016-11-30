@@ -1,0 +1,114 @@
+// "main": "main.less"
+
+div.console-preview{
+    display: block;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    box-sizing: border-box;
+    padding: 7px 35px 8px 35px;
+    color: @white;
+    font-family: @code;
+    font-size: 10pt;
+    background-color: fade(@black, 90%);
+    width: 100%;
+    transition: @transition;
+    font-weight: bolder;
+    letter-spacing: 0.5px;
+
+    &.red{color: @red;}
+    &.green{color: @green;}
+    &.white{color: @white;}
+    &.blue{color: lighten(@blue, 10%);}
+
+    i{
+        font-size: 12pt;
+        margin-right: 10px;
+        position: relative;
+        top: 1px;
+    }
+
+    &:hover{
+        cursor: pointer;
+        background-color: fade(@black, 100%);
+        transition: @transition;
+    }
+
+    .console-unread{
+        float: right;
+        background-color: fade(@red, 80%);
+        display: flex;
+        height: 17px;
+        width: 17px;
+        text-align: center;
+        border-radius: 50%;
+        box-sizing: border-box;
+        padding: 1px 0 0 0;
+        justify-content: center;
+        flex-direction: column;
+        color: @white;
+    }
+}
+
+
+div.console{
+    display: block;
+    position: fixed;
+    background-color: fade(@black, 90%);
+    box-sizing: border-box;
+    padding: 0 0 35px 0;
+    width: 100%;
+    color: @white;
+    height: 220px;
+    font-family: @code;
+    font-size: 10pt;
+    bottom: 0;
+    left: 0;
+
+    div.console-minimize{
+        display: block;
+        width: 100%;
+        text-align: center;
+        font-size: 14pt;
+        box-sizing: border-box;
+        padding: 5px 0 5px 0;
+        margin-bottom: 15px;
+        transition: @transition;
+        position: absolute;
+        z-index: 250;
+        background-color: transparent;
+        &:hover{
+            cursor: pointer;
+            transition: @transition;
+            background-color: fade(@black, 50%);
+        }
+    }
+
+    div.console-messages{
+        display: block;
+        height: auto;
+        height: 185px;
+        overflow: auto;
+        padding: 35px 20px 0 0;
+        width: 100%;
+
+        div.line{
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            box-sizing: border-box;
+            padding: 2px 35px;
+            letter-spacing: 0.5px;
+
+
+            &:last-child{
+                margin-bottom: 25px;
+            }
+
+            &.red{color: @red;}
+            &.green{color: @green;}
+            &.white{color: @white;}
+            &.blue{color: @blue;}
+        }
+    }
+}

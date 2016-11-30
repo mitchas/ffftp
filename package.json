@@ -1,0 +1,44 @@
+{
+  "name": "electron-angular-material",
+  "version": "1.0.0",
+  "description": "An Electron + AngularJS + Angular Material boilerplate",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thomas-barthelemy/electron-angular-boilerplate.git"
+  },
+  "keywords": [
+    "Electron",
+    "AngularJS",
+    "Angular Material",
+    "Boilerplate"
+  ],
+  "author": "Thomas Barthelemy",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/thomas-barthelemy/electron-angular-boilerplate/issues"
+  },
+  "homepage": "https://github.com/thomas-barthelemy/electron-angular-boilerplate",
+  "devDependencies": {
+    "angular": "^1.5.7",
+    "angular-animate": "^1.5.7",
+    "angular-aria": "^1.5.7",
+    "angular-material": "^1.0.9",
+    "angular-route": "^1.5.7",
+    "asar": "^0.11.0",
+    "electron-packager": "^7.0.4",
+    "grunt": "^1.0.1",
+    "grunt-comment-toggler": "^0.2.2",
+    "grunt-contrib-copy": "^1.0.0",
+    "grunt-contrib-uglify": "^1.0.1",
+    "grunt-search": "^0.1.8"
+  },
+  "dependencies": {
+    "directory-tree": "^1.1.1",
+    "jsftp": "^1.5.5",
+    "jsftp-rmr": "0.0.1"
+  }
+}
