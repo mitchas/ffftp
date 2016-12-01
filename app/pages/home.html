@@ -33,7 +33,7 @@
             <span class="size">Size</span>
             <span class="time">Date</span>
         </div>
-        <div class="file" ng-repeat="file in files | orderBy: name |filter:searchFiles as fileSearch" ng-focus="selectTimer(); selectFile(file.name, file.type)" ng-blur="clearSelected()" ng-dblClick="intoDir(file.name)">
+        <div class="file" ng-repeat="file in files | orderBy: name |filter:searchFiles as fileSearch" ng-focus="selectTimer(); selectFile(file.name, file.type)" ng-blur="clearSelected()" ng-dblClick="intoDir(file.name)" draggable="true">
             <span class="name"><i class="ion-android-folder-open" ng-if="file.type == 1"></i><i class="ion-document" ng-if="file.type != 1"></i>{{file.name}}</span>
             <span class="size">{{file.size | filesize}}</span>
             <span class="time">{{file.time | date}}</span>

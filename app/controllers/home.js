@@ -1,6 +1,8 @@
 app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', function($scope, $timeout, $filter, $interval){
 
     // Initialize Variables
+    $scope.fs = require('fs');
+
     $scope.path = ".";
     $scope.emptyMessage = "Loading...";
     $scope.fullConsole = false;
@@ -17,7 +19,7 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
     //
     $scope.saveFavorite = false;
 
-    
+
 
 
     // Load Favorites
@@ -118,10 +120,14 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
                     $scope.files = res;
                     $scope.splitPath();
                     $scope.emptyMessage = "There's nothin' here";
+                    if($scope.path != '.'){
+                        $scope.console("white", "Navigated to " + $scope.path);
+                    }
                 }, 0);
             });
         }
     }
+
 
 
     //
@@ -198,6 +204,7 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
         $scope.showingNewFolder = false;
         $scope.ftp.raw('mkd', $scope.path + "/" + $scope.newFolderName, function(err, data) {
             $scope.changeDir();
+            $scope.newFolderName = "";
             if(err){$scope.console("red", err)}
             else{$scope.console("white", data.text)}
         });
@@ -256,14 +263,111 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
     // Download a file
     //
     $scope.downloadFile = function(){
-        $scope.ftp.get($scope.selectedFilePath, function(hadErr) {
-            if (hadErr){
-                $scope.console("red", "There was an error retrieving the file.");
-            }else{
-                $scope.console("green", "File downloaded successfully!");
+        if($scope.selectedFileType == 0){ // If file, download right away
+            $scope.saveFileToDisk($scope.selectedFilePath, $scope.selectedFileName);
+        }else if($scope.selectedFileType == 1){ // if folder, index folders and files
+            $scope.fs.mkdir("C:\\Users\\samue\\Desktop\\ftptest\\" + $scope.selectedFileName);
+            $scope.foldersToCreate = [];
+            $scope.filesToDownload = [];
+            $scope.getDownloadTree($scope.selectedFilePath);
+            $scope.downloadTime = 0;
+            $scope.uploadInterval = $interval(function () {$scope.downloadTime++;}, 1000); // Download Timer
+            $scope.gettingDownloadReady = true;
+            $scope.watchDownloadProcess();
+        }else{ // else unknown file type
+            $scope.console("red", "Unable to download file " + $scope.selectedFileName + ". Unknown file type.")
+        }
+    }
+
+    // Checks every 400ms if download tree is still processing
+    $scope.watchDownloadProcess = function(){
+        $timeout(function() {
+            if($scope.gettingDownloadReady){$scope.watchDownloadProcess;}
+            else{$scope.processFiles();}
+        }, 400);
+    }
+
+    // Get download tree loops through all folders and files, and adds them to arrays.
+    // Current directory folders are added to the tempfolders array
+    $scope.getDownloadTree = function(path){
+        $scope.tempFolders = [];
+        $scope.tempPath = path;
+        $scope.gettingDownloadReady = true; // Reset because still working
+
+        $scope.ftp.ls(path, function(err, res) {
+            console.log(res);
+            for (var i = 0, item; item = res[i]; i++) {
+                if(item.type==1){ // if folder, push to full array and temp
+                    $scope.foldersToCreate.push({"path": path, "name": item.name});
+                    $scope.tempFolders.push({"path": path, "name": item.name});
+                }else if(item.type==0){ // if file, push to file array
+                    $scope.filesToDownload.push({"path": path, "name": item.name});
+                }
+            }
+            $scope.gettingDownloadReady = false;
+            for (var x = 0, folder; folder = $scope.tempFolders[x]; x++) { // for each folder, getDownloadTree again and index those. Same process
+                console.log("FOLDER PATH: " + folder.path);
+                $scope.getDownloadTree(folder.path + "/" + folder.name);
             }
         });
     }
+
+    // Once getDownloadTree is finished, this is called
+    $scope.processFiles = function(){
+        for (var i = 0, folder; folder = $scope.foldersToCreate[i]; i++) { // Create all empty folders
+            var stringWithoutSlash = folder.path.substring(folder.path.indexOf("/") + 1) + "/" + folder.name;
+            $scope.fs.mkdir("C:\\Users\\samue\\Desktop\\ftptest\\" + stringWithoutSlash);
+        }
+        // Then begin downloading files individually
+        $scope.downloadFileZero = 0;
+        $scope.saveAllFilesToDisk();
+    }
+
+    $scope.saveAllFilesToDisk = function(){
+        if($scope.filesToDownload[$scope.downloadFileZero]){
+            var filepath = $scope.filesToDownload[$scope.downloadFileZero].path;
+            var filename = $scope.filesToDownload[$scope.downloadFileZero].name;
+            var absoluteFilePath = filepath.substring(filepath.indexOf("/") + 1) + "/" + filename;
+
+            var from = filepath + "/" + filename;
+            var to = "C:\\Users\\samue\\Desktop\\ftptest\\" + absoluteFilePath.replace(/\//g, "\\");
+
+            $scope.ftp.get(from, to, function(hadErr) {
+                if (hadErr){
+                    $scope.console("red", "Error downloading " + filename + "... " + hadErr);
+                }else{
+                    $scope.console("white", "Downloaded " + filename + " to " + to);
+                }
+                $scope.downloadFileZero++;
+                $scope.changeDir();
+                $scope.saveAllFilesToDisk(); // do it again until all files are downloaded
+            });
+
+        }else{ // once finished
+            $timeout(function() {
+                $scope.changeDir();
+                $interval.cancel($scope.uploadInterval);
+                $scope.console("blue", "Successfully downloaded " + $scope.foldersToCreate.length + " folders and " + $scope.filesToDownload.length + " files in " + $scope.downloadTime + " seconds.");
+            }, 200);
+        }
+    }
+
+
+    // Download file if single file - not folder
+    $scope.saveFileToDisk = function(filepath, filename){
+        var from = filepath;
+        var to = "C:\\Users\\samue\\Desktop\\ftptest\\" + filename;
+        console.log("DOWNLOADING: " + from + " TO: " + to);
+        $scope.ftp.get(from, to, function(hadErr) {
+            if (hadErr){
+                $scope.console("red", "Error downloading " + filename);
+            }else{
+                $scope.console("green", "Successfully downloaded " + filename);
+            }
+        });
+    }
+
+
 
 
     //
@@ -278,6 +382,8 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
         $scope.folderTree = [];
         $scope.baseUploadPath = $scope.path;
 
+        $scope.uploadingFiles = true;
+
         $scope.foldersArray = [];
         $scope.filesArray = [];
 
@@ -290,7 +396,6 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
 
         $scope.baselocalpath = $scope.dragged[0].path.substring(0, $scope.dragged[0].path.lastIndexOf('\\'));
 
-
         $scope.gatherFiles($scope.folderTree);
         $timeout(function() {
             $scope.uploadEverything();
@@ -300,6 +405,9 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
     }
 
     $scope.gatherFiles = function(tree){
+        if(!tree.length){
+            console.log("No folders")
+        }
         $scope.nestedTree = [];
         for (var i = 0, f; f = tree[i]; i++) {
             if(tree[i].extension){ // if file
@@ -362,12 +470,14 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
                     $scope.console("red", "Error Uploading " + $scope.fileToUpload);
                 }
                 $scope.filezero++;
+                $scope.changeDir();
                 $scope.upFiles();
             });
         }else{
             $timeout(function() {
-                $scope.changeDir();
                 $interval.cancel($scope.uploadInterval);
+                $scope.uploadingFiles = false;
+                $scope.changeDir();
                 $scope.console("blue", "File transfer completed in " + $scope.uploadTime + " seconds.");
             }, 200);
         }
@@ -384,10 +494,12 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
     $scope.consoleMessages = [];
     $scope.consoleUnread = 0;
     $scope.console = function(color, msg){
-        $scope.consoleMessageClass = color;
-        $scope.consoleMessage = msg;
-        $scope.consoleMessages.push({"color":color, "message":msg});
-        $scope.consoleUnread++;
+        $timeout(function() {
+            $scope.consoleMessageClass = color;
+            $scope.consoleMessage = msg;
+            $scope.consoleMessages.push({"color":color, "message":msg});
+            $scope.consoleUnread++;
+        }, 0);
     }
     $scope.openConsole = function(){
         $scope.consoleUnread = 0;
