@@ -111,7 +111,9 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
     // Change directory
     //
     $scope.changeDir = function(){
-        if($scope.uploadingFiles){
+        $scope.searchFiles = "";
+        if($scope.showCancelOperation){
+            $scope.console("red", "Cannot change directory during operation.");
             return;
         }else{
             $scope.fileSelected = false;
@@ -384,8 +386,6 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
         $scope.folderTree = [];
         $scope.baseUploadPath = $scope.path;
 
-        $scope.uploadingFiles = true;
-
         $scope.foldersArray = [];
         $scope.filesArray = [];
 
@@ -481,7 +481,6 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
             $timeout(function() {
                 $interval.cancel($scope.uploadInterval);
                 $scope.showCancelOperation = false;
-                $scope.uploadingFiles = false;
                 $scope.changeDir();
                 $scope.console("blue", "File transfer completed in " + $scope.uploadTime + " seconds.");
             }, 200);
