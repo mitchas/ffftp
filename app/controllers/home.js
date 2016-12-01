@@ -271,7 +271,8 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
             $scope.filesToDownload = [];
             $scope.getDownloadTree($scope.selectedFilePath);
             $scope.downloadTime = 0;
-            $scope.uploadInterval = $interval(function () {$scope.downloadTime++;}, 1000); // Download Timer
+            $scope.showCancelOperation = true;
+            $scope.downloadInterval = $interval(function () {$scope.downloadTime++;}, 1000); // Download Timer
             $scope.gettingDownloadReady = true;
             $scope.watchDownloadProcess();
         }else{ // else unknown file type
@@ -346,7 +347,8 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
         }else{ // once finished
             $timeout(function() {
                 $scope.changeDir();
-                $interval.cancel($scope.uploadInterval);
+                $interval.cancel($scope.downloadInterval);
+                $scope.showCancelOperation = false;
                 $scope.console("blue", "Successfully downloaded " + $scope.foldersToCreate.length + " folders and " + $scope.filesToDownload.length + " files in " + $scope.downloadTime + " seconds.");
             }, 200);
         }
@@ -389,6 +391,8 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
 
         $scope.uploadTime = 0;
         $scope.uploadInterval = $interval(function () {$scope.uploadTime++;}, 1000);
+        $scope.showCancelOperation = true;
+
 
         for (var i = 0, f; f = $scope.dragged[i]; i++) {
             $scope.folderTree.push(dirTree($scope.dragged[i].path));
@@ -476,6 +480,7 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
         }else{
             $timeout(function() {
                 $interval.cancel($scope.uploadInterval);
+                $scope.showCancelOperation = false;
                 $scope.uploadingFiles = false;
                 $scope.changeDir();
                 $scope.console("blue", "File transfer completed in " + $scope.uploadTime + " seconds.");
@@ -505,6 +510,16 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
         $scope.consoleUnread = 0;
         $scope.fullConsole = true
     }
+
+
+    //
+    // Cancel Operations
+    //
+    // $scope.cancelFTPOperation = function(){
+    //     $scope.ftp.raw('abor', function() {
+    //         $scope.console("red", "Process aborted.")
+    //     });
+    // }
 
 
 

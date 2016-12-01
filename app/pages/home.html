@@ -152,8 +152,12 @@ MENU
 </div>
 
 
+<!-- Cancel any operation -->
+<!-- <div class="cancel-operation ng-fade" ng-class="{withconsole : fullConsole}" ng-show="showCancelOperation" ng-click="cancelFTPOperation()">Cancel Operation</div> -->
+
+<!-- Consoles -->
 <div class="console-preview {{consoleMessageClass}} slideBottom" ng-show="!fullConsole" ng-click="openConsole()">
-    <i class="ion-code-working"></i> {{consoleMessage}}
+    <span class="message"><i class="ion-code-working"></i> {{consoleMessage}}</span>
     <span class="console-unread">{{consoleUnread}}</span>
 </div>
 <div class="console slideBottom" ng-show="fullConsole">

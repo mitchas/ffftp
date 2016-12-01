@@ -1,5 +1,26 @@
 // "main": "main.less"
+div.cancel-operation{
+    position: fixed;
+    right: 0;
+    bottom: 32px;
+    box-sizing: border-box;
+    padding: 5px 8px;
+    background-color: fade(@red, 80%);
+    color: @white;
+    font-family: @code;
+    font-size: 10pt;
+    transition: @transition;
 
+    &:hover{
+        cursor: pointer;
+        background-color: @red;
+        transition: @transition;
+    }
+
+    &.withconsole{
+        bottom: 220px;
+    }
+}
 div.console-preview{
     display: block;
     position: fixed;
@@ -16,6 +37,12 @@ div.console-preview{
     transition: @transition;
     font-weight: bolder;
     letter-spacing: 0.5px;
+    height: 32px;
+    .message{
+        line-height: 2em;
+        position: relative;
+        top: -5px;
+    }
 
     &.red{color: @red;}
     &.green{color: @green;}
@@ -36,18 +63,29 @@ div.console-preview{
     }
 
     .console-unread{
+        position: absolute;
         float: right;
-        background-color: fade(@red, 80%);
+        right: 10px;
+        bottom: 7px;
+        background-color: fade(@white, 90%);
         display: flex;
         height: 17px;
-        width: 17px;
-        text-align: center;
-        border-radius: 50%;
+        width: auto;
         box-sizing: border-box;
-        padding: 1px 0 0 0;
+        text-align: center;
+        box-sizing: border-box;
+        padding: 1px 5px 0 5px;
         justify-content: center;
         flex-direction: column;
+        transition: @transition;
+        color: @black;
+    }
+    .cancel-operation{
+        display: none;
+        background-color: @red;
         color: @white;
+        transition: @transition;
+        cursor: pointer;
     }
 }
 
