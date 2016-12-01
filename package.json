@@ -1,5 +1,6 @@
 {
   "name": "ffftp",
+  "productName": "ffftp",
   "version": "0.0.5",
   "description": "A minimal FTP client built on Electron",
   "main": "main.js",
@@ -20,6 +21,7 @@
     "angular-material": "^1.0.9",
     "angular-route": "^1.5.7",
     "asar": "^0.11.0",
+    "electron": "^1.4.10",
     "electron-packager": "^7.0.4",
     "grunt": "^1.0.1",
     "grunt-comment-toggler": "^0.2.2",
