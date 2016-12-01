@@ -17,10 +17,7 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
     //
     $scope.saveFavorite = false;
 
-    // $scope.ftpHost = "server227.web-hosting.com";
-    // $scope.ftpPort = 21;
-    // $scope.ftpUsername = "typitwey";
-    // $scope.ftpPassword = "GrJ0P_Lf4nmmX";
+    
 
 
     // Load Favorites
