@@ -29,7 +29,7 @@ app.controller('downloadController', ['$scope', '$route', '$routeParams',
 function($scope, $route, $routeParams) {
     $scope.userVersion = $routeParams.version;
 
-    $scope.windowsDownload = 'https://github.com/mitchas/ffftp/tree/master/releases/windows/'
+    $scope.windowsDownload = 'https://github.com/mitchas/ffftp/tree/master/ffftp.app/releases/windows/'
 
     $scope.changelog = [
         {
