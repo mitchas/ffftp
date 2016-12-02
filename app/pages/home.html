@@ -22,8 +22,10 @@
             <button ng-click="upDir()" ng-disabled="path == '.'"><i class="ion-android-arrow-dropup-circle"></i> Up</button>
             <button ng-click="showingNewFolder = true"><i class="ion-android-folder-open"></i>New Folder</button>
             <button ng-click="showingConfirmDelete = true" ng-disabled="!fileSelected && !confirmingDelete"><i class="ion-trash-a"></i>Delete</button>
-            <button ng-click="downloadFile()" ng-disabled="!fileSelected"><i class="ion-android-download"></i>Download</button>
+            <button ng-click="chooseDownloadDirectory()" ng-disabled="!fileSelected"><i class="ion-android-download"></i>Download</button>
+            <!-- <button ng-click="downloadFile()" ng-disabled="!fileSelected"><i class="ion-android-download"></i>Download</button> -->
             <button ng-click="renameFile()" ng-disabled="!fileSelected"><i class="ion-edit"></i>Rename</button>
+            <input type="file" id="chooseDownloadDirectory" onchange="angular.element(this).scope().saveDownloadPath()" webkitdirectory />
         </div>
     </div>
 
@@ -125,30 +127,30 @@ MENU
  -->
 <div class="rename zoom" ng-show="showingRename">
     <form ng-submit="renameFile()">
-        <input type="text" ng-model="fileRenameInput" show-focus="showingRename">
+        <input type="text" ng-model="fileRenameInput" show-focus="showingRename" placeholder="new name for {{fileRenameInput}}">
         <div class="modal-buttons">
-            <button class="cancel" type="button" ng-click="showingRename = false">Cancel</button>
-            <button class="proceed" type="submit">Rename</button>
+            <button class="cancel" type="button" ng-click="showingRename = false">cancel</button>
+            <button class="proceed" type="submit">rename</button>
         </div>
     </form>
 </div>
 
 <div class="newfolder zoom" ng-show="showingNewFolder">
     <form ng-submit="newFolder()">
-        <input type="text" ng-model="newFolderName" placeholder="New Folder Name" show-focus="showingNewFolder">
+        <input type="text" ng-model="newFolderName" placeholder="new folder name" show-focus="showingNewFolder">
         <div class="modal-buttons">
-            <button class="cancel" type="button" ng-click="showingNewFolder = false">Cancel</button>
-            <button class="proceed" type="submit">Create</button>
+            <button class="cancel" type="button" ng-click="showingNewFolder = false">cancel</button>
+            <button class="proceed" type="submit">create</button>
         </div>
     </form>
 </div>
 
 <div class="confirmdelete zoom" ng-show="showingConfirmDelete">
     <form ng-submit="deleteFile()">
-        <h1>Are you sure?</h1>
+        <h1>are you sure?</h1>
         <div class="modal-buttons center">
-            <button class="cancel" type="button" ng-click="showingConfirmDelete = false">Cancel</button>
-            <button class="danger" type="submit" show-focus="showingConfirmDelete">Delete</button>
+            <button class="cancel" type="button" ng-click="showingConfirmDelete = false">cancel</button>
+            <button class="danger" type="submit" show-focus="showingConfirmDelete">delete</button>
         </div>
     </form>
 </div>

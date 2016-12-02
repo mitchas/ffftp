@@ -3,6 +3,11 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
     // Initialize Variables
     $scope.fs = require('fs');
 
+    // $scope.remote = require('electron').remote;
+    // $scope.dialog = remote.require('dialog');
+    var remote = require('electron').remote;
+    var dialog = require('electron').dialog;
+
     $scope.path = ".";
     $scope.emptyMessage = "Loading...";
     $scope.fullConsole = false;
@@ -113,7 +118,6 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
     $scope.changeDir = function(){
         $scope.searchFiles = "";
         if($scope.showCancelOperation){
-            $scope.console("red", "Cannot change directory during operation.");
             return;
         }else{
             $scope.fileSelected = false;
@@ -264,7 +268,14 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
     //
     // Download a file
     //
-    $scope.downloadFile = function(){
+    $scope.chooseDownloadDirectory = function(){
+        document.getElementById('chooseDownloadDirectory').click()
+    }
+    $scope.saveDownloadPath = function(){
+        $scope.downloadPath = document.getElementById('chooseDownloadDirectory').files[0].path;
+        $scope.downloadFiles();
+    }
+    $scope.downloadFiles = function(){
         if($scope.selectedFileType == 0){ // If file, download right away
             $scope.saveFileToDisk($scope.selectedFilePath, $scope.selectedFileName);
         }else if($scope.selectedFileType == 1){ // if folder, index folders and files
@@ -333,7 +344,7 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
             var absoluteFilePath = filepath.substring(filepath.indexOf("/") + 1) + "/" + filename;
 
             var from = filepath + "/" + filename;
-            var to = "C:\\Users\\samue\\Desktop\\ftptest\\" + absoluteFilePath.replace(/\//g, "\\");
+            var to = $scope.downloadPath + "\\" + absoluteFilePath.replace(/\//g, "\\");
 
             $scope.ftp.get(from, to, function(hadErr) {
                 if (hadErr){
@@ -360,7 +371,7 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
     // Download file if single file - not folder
     $scope.saveFileToDisk = function(filepath, filename){
         var from = filepath;
-        var to = "C:\\Users\\samue\\Desktop\\ftptest\\" + filename;
+        var to = $scope.downloadPath + "\\" + filename;
         console.log("DOWNLOADING: " + from + " TO: " + to);
         $scope.ftp.get(from, to, function(hadErr) {
             if (hadErr){
@@ -382,28 +393,32 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
     }
     document.body.ondrop = (ev) => {
         $scope.dragged = ev.dataTransfer.files;
-        $scope.console("white", "Getting file tree...")
-        $scope.folderTree = [];
-        $scope.baseUploadPath = $scope.path;
 
-        $scope.foldersArray = [];
-        $scope.filesArray = [];
+        if($scope.dragged[1]){
+            $scope.console("white", "Getting file tree...")
+            $scope.folderTree = [];
+            $scope.baseUploadPath = $scope.path;
 
-        $scope.uploadTime = 0;
-        $scope.uploadInterval = $interval(function () {$scope.uploadTime++;}, 1000);
-        $scope.showCancelOperation = true;
+            $scope.foldersArray = [];
+            $scope.filesArray = [];
+
+            $scope.uploadTime = 0;
+            $scope.uploadInterval = $interval(function () {$scope.uploadTime++;}, 1000);
+            $scope.showCancelOperation = true;
 
 
-        for (var i = 0, f; f = $scope.dragged[i]; i++) {
-            $scope.folderTree.push(dirTree($scope.dragged[i].path));
+            for (var i = 0, f; f = $scope.dragged[i]; i++) {
+                $scope.folderTree.push(dirTree($scope.dragged[i].path));
+            }
+
+            $scope.baselocalpath = $scope.dragged[0].path.substring(0, $scope.dragged[0].path.lastIndexOf('\\'));
+
+            $scope.gatherFiles($scope.folderTree);
+            $timeout(function() {
+                $scope.uploadEverything();
+            }, 1000);
         }
 
-        $scope.baselocalpath = $scope.dragged[0].path.substring(0, $scope.dragged[0].path.lastIndexOf('\\'));
-
-        $scope.gatherFiles($scope.folderTree);
-        $timeout(function() {
-            $scope.uploadEverything();
-        }, 1000);
 
         ev.preventDefault();
     }
