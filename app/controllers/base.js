@@ -1,4 +1,4 @@
-app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', function($scope, $timeout, $filter, $interval){
+app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', 'ngDraggable', function($scope, $timeout, $filter, $interval, ngDraggable){
 
     // Initialize Variables
     $scope.fs = require('fs');
@@ -500,6 +500,18 @@ app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', functi
                 $scope.console("blue", "File transfer completed in " + $scope.uploadTime + " seconds.");
             }, 200);
         }
+    }
+
+
+
+
+    // Drag to move files
+    // Unused for now
+    $scope.onDragComplete=function(path){
+        console.log("MOVING: " + path);
+    }
+    $scope.onDropComplete=function(path){
+        console.log("MOVE TO: " + path);
     }
 
 

@@ -33,6 +33,7 @@
     "directory-tree": "^1.1.1",
     "electron-json-storage": "^2.1.0",
     "jsftp": "^1.5.5",
-    "jsftp-rmr": "0.0.1"
+    "jsftp-rmr": "0.0.1",
+    "ng-draggable": "^1.0.0"
   }
 }

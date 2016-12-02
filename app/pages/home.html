@@ -23,7 +23,6 @@
             <button ng-click="showingNewFolder = true"><i class="ion-android-folder-open"></i>New Folder</button>
             <button ng-click="showingConfirmDelete = true" ng-disabled="!fileSelected && !confirmingDelete"><i class="ion-trash-a"></i>Delete</button>
             <button ng-click="chooseDownloadDirectory()" ng-disabled="!fileSelected"><i class="ion-android-download"></i>Download</button>
-            <!-- <button ng-click="downloadFile()" ng-disabled="!fileSelected"><i class="ion-android-download"></i>Download</button> -->
             <button ng-click="renameFile()" ng-disabled="!fileSelected"><i class="ion-edit"></i>Rename</button>
             <input type="file" id="chooseDownloadDirectory" onchange="angular.element(this).scope().saveDownloadPath()" webkitdirectory />
         </div>
@@ -37,7 +36,18 @@
             <span class="size">Size</span>
             <span class="time">Date</span>
         </div>
-        <div class="file" ng-repeat="file in files | orderBy: name |filter:searchFiles as fileSearch" ng-focus="selectTimer(); selectFile(file.name, file.type)" ng-blur="clearSelected()" ng-dblClick="intoDir(file.name)" draggable="true">
+        <div class="file"
+            ng-repeat="file in files | orderBy: name |filter:searchFiles as fileSearch"
+            ng-focus="selectTimer(); selectFile(file.name, file.type)"
+            ng-blur="clearSelected()"
+            ng-dblClick="intoDir(file.name)"
+        >
+        <!--
+            Move themes to .file for drag/drop implementation
+            ng-drag="true" ng-drag-success="onDragComplete(file.name)"
+            ng-drop="true" ng-drop-success="onDropComplete(file.name)"
+            draggable="true"
+         -->
             <span class="name"><i class="ion-android-folder-open" ng-if="file.type == 1"></i><i class="ion-document" ng-if="file.type != 1"></i>{{file.name}}</span>
             <span class="size">{{file.size | filesize}}</span>
             <span class="time">{{file.time | date}}</span>
