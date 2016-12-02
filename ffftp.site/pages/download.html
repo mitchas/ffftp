@@ -1,0 +1,14 @@
+<div class="download-wrapper">
+    <h1>Latest version: {{changelog[0].version}}</h1>
+    <h2 ng-if="userVersion">You have version: {{userVersion}}</h2>
+    <div class="download-links">
+        <a href="{{windowsDownload}}" class="button">Download windows .exe</a>
+    </div>
+
+    <h3 class="changelog-header">Changelog</h3>
+
+    <div class="changelog-section" ng-repeat="version in changelog">
+        <h5>Version {{version.version}}<small>{{version.date}}</small></h5>
+        <div class="change" ng-repeat="change in version.changes">{{change}}</div>
+    </div>
+</div>
