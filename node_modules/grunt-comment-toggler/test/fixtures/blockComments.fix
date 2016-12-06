@@ -1,0 +1,36 @@
+<!-- comments:comment-block html -->
+  Line 1
+  Line 2
+<!-- endcomments -->
+
+<!-- comments:uncomment-block html -->
+<!--
+  Line 1
+  Line 2
+-->
+<!-- endcomments -->
+
+<!-- comments:toggle-block html -->
+<!--
+  Line 1
+  Line 2
+-->
+<!-- endcomments -->
+
+
+<!-- comments:comment-block css -->
+  Line 1
+  Line 2
+<!-- endcomments -->
+
+<!-- comments:uncomment-block css -->
+  /*Line 1
+  Line 2*/
+<!-- endcomments -->
+
+<!-- comments:toggle-block css -->
+
+  Line 1
+  Line 2
+
+<!-- endcomments -->

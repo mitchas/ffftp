@@ -1,0 +1,14 @@
+<!-- comments:comment // -->
+  // Line 1
+  // Line 2
+<!-- endcomments -->
+
+<!-- comments:uncomment // -->
+  Line 1
+  Line 2
+<!-- endcomments -->
+
+<!-- comments:toggle // -->
+  // Line 1
+  Line 2
+<!-- endcomments -->
