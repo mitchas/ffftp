@@ -2,14 +2,14 @@
 
 _There are still a few issues_
 
-## Running it locally
+## Building & running it locally:
 - Clone the repo.
 - cd to the directory
 - make sure electron is installed `npm install electron`
-- install and run `npm install && npm start`
+- install and run with `npm install && npm start`
 
-## Packaging it for distribution
+## Packaging it (.app for mac, .exe for windows)
 - Install [Electron Packager Interactive](https://github.com/Urucas/electron-packager-interactive) with `npm install -g electron-packager-interactive`
 - run `epi`
-- Go through steps.
+- Follow steps
   - Icon is `./icon.ico'
