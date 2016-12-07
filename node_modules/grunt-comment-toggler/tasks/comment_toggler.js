@@ -1,0 +1,39 @@
+/*
+ * grunt-comment-toggler
+ * 
+ *
+ * Copyright (c) 2014 Kimmo Salmela
+ * Licensed under the MIT license.
+ */
+
+'use strict';
+
+module.exports = function(grunt) {
+    
+    var commentToggler = require("./lib/comment_toggler")(grunt);
+
+    grunt.registerMultiTask('toggleComments', 'Comment or uncomment lines inside build blocks.', function() {
+
+        var options = this.options({
+            removeCommands: false,
+            padding: 1
+        });
+        
+        commentToggler.options = options;
+
+        this.files.forEach(function(file) {
+            var src = file.src[0];
+
+            if (!grunt.file.exists(src || ' ')) {
+                return grunt.log.warn("Source file '" + src + "' not found.");
+            }
+
+            var content = commentToggler.processFile(grunt.file.read(src));
+
+            grunt.file.write(file.dest, content);
+
+            grunt.log.writeln('File "' + file.dest + '" created.');
+        });
+    });
+
+};
