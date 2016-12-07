@@ -1,7 +1,7 @@
 {
   "name": "ffftp",
   "productName": "ffftp",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A minimal FTP client built on Electron",
   "main": "main.js",
   "scripts": {
