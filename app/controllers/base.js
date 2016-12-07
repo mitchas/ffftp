@@ -1,6 +1,12 @@
 app.controller('homeCtrl', ['$scope', '$timeout', '$filter', '$interval', 'ngDraggable', '$http',
 function($scope, $timeout, $filter, $interval, ngDraggable, $http){
 
+    // Analytics setup (https://github.com/peaksandpies/universal-analytics)
+    var ua = require('universal-analytics');
+    var visitor = ua('UA-88669012-1');
+    visitor.pageview("/").send()
+    console.log("Tracking " + visitor);
+
     // Initialize Variables
     $scope.fs = require('fs');
 
@@ -639,34 +645,34 @@ function($scope, $timeout, $filter, $interval, ngDraggable, $http){
     var template = [
         {label: 'ffftp',
             submenu: [{
-                    label: 'about',
+                    label: 'About',
                     accelerator: 'CmdOrCtrl+H',
                     click: function(item, focusedWindow) {
-                        window.open('http://ffftp.site')
+                        shell.openExternal('http://ffftp.site');
                     }
                 },{
-                    label: 'close',
+                    label: 'Close',
                     accelerator: 'CmdOrCtrl+Q',
                     role: 'close'
                 }
             ]
         },{
-            label: 'action',
+            label: 'Action',
             submenu: [{
-                    label: 'connect',
+                    label: 'Connect',
                     accelerator: 'CmdOrCtrl+R',
                     click: function() {
                         $timeout(function() {$scope.showingMenu = true;}, 0);
                     }
                 },{
-                        label: 'up directory',
+                        label: 'Up directory',
                         accelerator: 'CmdOrCtrl+U',
                         click: function() {
                             if($scope.path == '.'){$scope.console("red", "You are in the root directory.")}
                                 else{$scope.upDir();}
                         }
                 },{
-                        label: 'new folder',
+                        label: 'New folder',
                         accelerator: 'CmdOrCtrl+N',
                         click: function() {
                             $timeout(function() {$scope.showingNewFolder = true;}, 0);
@@ -674,16 +680,16 @@ function($scope, $timeout, $filter, $interval, ngDraggable, $http){
                 }
             ]
         },{
-            label: 'view',
+            label: 'View',
             submenu: [{
-                    label: 'reload',
+                    label: 'Reload',
                     accelerator: 'CmdOrCtrl+R',
                     click: function(item, focusedWindow) {
                         if (focusedWindow)
                             focusedWindow.reload();
                     }
                 },{
-                    label: 'full screen',
+                    label: 'Full screen',
                     accelerator: (function() {
                         if (process.platform == 'darwin')
                             return 'Ctrl+Command+F';
@@ -695,19 +701,28 @@ function($scope, $timeout, $filter, $interval, ngDraggable, $http){
                             focusedWindow.setFullScreen(!focusedWindow.isFullScreen());
                     }
                 }
-                // {
-                //     label: 'Toggle Developer Tools',
-                //     accelerator: (function() {
-                //         if (process.platform == 'darwin')
-                //             return 'Alt+Command+I';
-                //         else
-                //             return 'Ctrl+Shift+I';
-                //     })(),
-                //     click: function(item, focusedWindow) {
-                //         if (focusedWindow)
-                //             focusedWindow.toggleDevTools();
-                //     }
-                // }
+            ]
+        },{
+            label: 'Dev',
+            submenu: [
+                {
+                    label: 'Dev tools',
+                    accelerator: (function() {
+                        if (process.platform == 'darwin')
+                            return 'Alt+Command+I';
+                        else
+                            return 'Ctrl+Shift+I';
+                    })(),
+                    click: function(item, focusedWindow) {
+                        if (focusedWindow)
+                            focusedWindow.toggleDevTools();
+                    }
+                },{
+                    label: 'Github',
+                    click: function(item, focusedWindow) {
+                          shell.openExternal('http://github.com/mitchas/ffftp');
+                    }
+                }
             ]
         }
     ];
