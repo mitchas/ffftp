@@ -24,7 +24,7 @@
             <button ng-click="showingConfirmDelete = true" ng-disabled="!fileSelected && !confirmingDelete"><i class="ion-trash-a"></i>Delete</button>
             <button ng-click="chooseDownloadDirectory()" ng-disabled="!fileSelected"><i class="ion-android-download"></i>Download</button>
             <button ng-click="renameFile()" ng-disabled="!fileSelected"><i class="ion-edit"></i>Rename</button>
-            <input type="file" id="chooseDownloadDirectory" onchange="angular.element(this).scope().saveDownloadPath()" webkitdirectory />
+            <input type="file" id="chooseDownloadDirectory" onchange="angular.element(this).scope().saveDownloadPath(); this.value=null;" webkitdirectory />
         </div>
     </div>
 
@@ -66,7 +66,7 @@ MENU
  -->
 <div class="menu slideTop" ng-show="showingMenu">
 
-    <a href="http://ffftp.site" target="_blank" class="menu-branding"><img src="app/visuals/ffftp200w.png"></a>
+    <a href="http://ffftp.site" target="_blank" class="menu-branding"><img src="app/visuals/icon200.png"></a>
 
     <i class="ion-ios-close-empty close-menu" ng-click="showingMenu = false" ng-show="ftp"></i>
 
