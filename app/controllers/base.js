@@ -302,9 +302,12 @@ function($scope, $timeout, $filter, $interval, ngDraggable, $http){
     }
     $scope.saveDownloadPath = function(){
         $scope.downloadPath = document.getElementById('chooseDownloadDirectory').files[0].path;
+        console.log($scope.downloadPath);
         $scope.downloadFiles();
     }
     $scope.downloadFiles = function(){
+        console.log("downloadFiles");
+
         if($scope.selectedFileType == 0){ // If file, download right away
             $scope.saveFileToDisk($scope.selectedFilePath, $scope.selectedFileName);
         }else if($scope.selectedFileType == 1){ // if folder, index folders and files
