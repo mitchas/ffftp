@@ -150,7 +150,13 @@ function($scope, $timeout, $filter, $interval, ngDraggable, $http){
             $scope.fileSelected = false;
             $scope.ftp.ls($scope.path, function(err, res) {
                 $timeout(function() {
-                    $scope.files = res;
+                    $scope.files = res.sort(function(a, b){
+                        //type:
+                        //      1 - dir
+                        //      0 - file
+                        // return b.type - a.type // works too
+                        return parseInt(b.type) - parseInt(a.type)
+                    })
                     $scope.splitPath();
                     $scope.emptyMessage = "There's nothin' here";
                     if($scope.path != '.'){
