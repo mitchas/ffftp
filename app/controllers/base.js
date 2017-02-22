@@ -37,22 +37,20 @@ function($scope, $timeout, $filter, $interval, ngDraggable, $http){
     $scope.appVersion = pjson.version;
     // console.log(require('electron').remote.app.getVersion());
 
-    // Get notifications from ffftp.site
-    $http({method: 'GET', url: 'http://www.ffftp.site/appupdate.json'
-       }).success(function(data){
-           $timeout(function() {
-               console.log(data);
-               if(data.version != $scope.appVersion.toString()){
-                   $scope.showUpdate = true;
-               }
-           }, 0);
-       }).error(function(){
-           console.log("Error getting notification");
-       });
-       $scope.updateApp = function(){
-           shell.openExternal('http://ffftp.site/download/'+$scope.appVersion);
-       }
-
+    // Get update notifications from ffftp.site
+    $http({
+        method: 'GET',
+        url: 'http://www.ffftp.site/appupdate.json'
+    }).then(function success(data) {
+        if (data.version !== $scope.appVersion.toString()) {
+            $scope.showUpdate = true;
+        }
+    }, function error() {
+        console.log('Error getting update notification');
+    });
+    $scope.updateApp = function() {
+        shell.openExternal('http://ffftp.site/download/' + $scope.appVersion);
+    };
 
 
 
