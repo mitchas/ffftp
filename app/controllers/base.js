@@ -54,7 +54,6 @@ function($scope, $timeout, $filter, $interval, ngDraggable, $http){
 
 
 
-
     // Load Favorites
     $scope.favorites = [];
     storage.has('favorites', function(error, hasKey) {

@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<testsuite name="jshint" tests="2" failures="3" errors="0">
+	<testcase name="test/fixtures/file1.js">
+		<failure message="Substring matched">
+		<![CDATA[
+1. line 2: @nocommit
+2. line 7: @nocommit
+		]]>
+		</failure>
+	</testcase>
+	<testcase name="test/fixtures/file2.js">
+		<failure message="Substring matched">
+		<![CDATA[
+1. line 3: @nocommit
+		]]>
+		</failure>
+	</testcase>
+</testsuite>
