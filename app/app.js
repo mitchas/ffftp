@@ -3,22 +3,23 @@
 
   // const dirTree = require('directory-tree'),
   // const JsFtp = require('jsftp'),
-    // Ftp = require('jsftp-rmr')(JsFtp);
-    // storage = require('electron-json-storage');
+  // Ftp = require('jsftp-rmr')(JsFtp);
+  // storage = require('electron-json-storage');
 
-  const app = angular.module('app', ['ngRoute', 'ngMaterial', 'ngAnimate', 'ngDraggable']);
+  angular.module('app', ['ngRoute', 'ngMaterial', 'ngAnimate', 'ngDraggable'])
+    .config(['$routeProvider', ($routeProvider) => {
+      $routeProvider
+        .when('/', {
+          templateUrl: './app/pages/main.html',
+          controller: 'homeCtrl'
+        })
+        .otherwise({redirectTo: '/'});
+    }])
+    .filter('filesize', filesizeFilter)
+    .directive('showFocus', showFocusDirective);
 
-  app.config(['$routeProvider', function ($routeProvider) {
-    $routeProvider
-      .when('/', {
-        templateUrl: './app/pages/main.html',
-        controller: 'homeCtrl'
-      })
-      .otherwise({redirectTo: '/'});
-  }]);
-
-  app.filter('filesize', function () {
-    return function (bytes, precision) {
+  function filesizeFilter() {
+    return (bytes, precision) => {
       if (bytes === 0 || isNaN(parseFloat(bytes)) || !isFinite(bytes)) return '-';
       if (typeof precision === undefined) precision = 1;
       const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'],
@@ -26,17 +27,17 @@
 
       return (bytes / Math.pow(1024, Math.floor(number))).toFixed(precision) + ' ' + units[number];
     };
-  });
+  }
 
-  app.directive('showFocus', function ($timeout) {
-    return function (scope, element, attrs) {
+  function showFocusDirective($timeout) {
+    return (scope, element, attrs) => {
       scope.$watch(attrs.showFocus,
-        function (newValue) {
-          $timeout(function () {
+        (newValue) => {
+          $timeout(() => {
             newValue && element.focus();
           });
         }, true);
     };
-  });
+  }
 })();
 
