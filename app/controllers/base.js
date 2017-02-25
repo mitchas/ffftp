@@ -14,6 +14,10 @@
 
     const fs = require('fs');
 
+    const JsFtp = require('jsftp'),
+      Ftp = require('jsftp-rmr')(JsFtp);
+    let ftp;
+
     // Get computer OS
     const os = require('os');
     let isWindowsOS = false,
@@ -115,27 +119,29 @@
 
       $scope.saveFavorite = false;
 
-      const JsFtp = require('jsftp'),
-        Ftp = require('jsftp-rmr')(JsFtp);
-
-      $scope.ftp = new Ftp({
+      const ftp = new Ftp({
         host: $scope.ftpHost,
         port: $scope.ftpPort,
         user: $scope.ftpUsername,
         pass: $scope.ftpPassword
       });
-      $scope.ftp.on('error', (data) => {
-        console.error(`Error: ${data}`);
+
+      ftp.on('error', (data) => {
+        console.error(data);
       });
-      $scope.ftp.on('lookup', (data) => {
+
+      ftp.on('lookup', (data) => {
         console.error(`Lookup error: ${data}`);
       });
 
-      $scope.console('white', `Connected to ${$scope.ftp.host}`);
+      ftp.on('client:connected', (connection) => {
+        $scope.console('white', `Connected to ${$scope.ftp.host}`);
+        console.log(connection);
 
-      // Start Scripts
-      $scope.changeDir();
-      $scope.splitPath();
+        // Start Scripts
+        $scope.changeDir();
+        $scope.splitPath();
+      });
     };
 
     $scope.saveFavoritesToStorage = () => {
@@ -156,7 +162,7 @@
         return;
       } else {
         $scope.fileSelected = false;
-        $scope.ftp.ls($scope.path, (err, res) => {
+        ftp.ls($scope.path, (err, res) => {
           $timeout(() => {
             $scope.files = res;
             $scope.splitPath();
@@ -226,7 +232,7 @@
     $scope.showingNewFolder = false;
     $scope.newFolder = () => {
       $scope.showingNewFolder = false;
-      $scope.ftp.raw('mkd', `${$scope.path}/${$scope.newFolderName}`, (err, data) => {
+      ftp.raw('mkd', `${$scope.path}/${$scope.newFolderName}`, (err, data) => {
         $scope.changeDir();
         $scope.newFolderName = '';
         if (err) {
@@ -245,14 +251,14 @@
       $scope.showingConfirmDelete = false;
       console.log(`DELETING ${$scope.path}/${$scope.selectedFileName}`);
       if ($scope.selectedFileType === 0) { // 0 is file
-        $scope.ftp.raw('dele', `${$scope.path}/${$scope.selectedFileName}`, (err, data) => {
+        ftp.raw('dele', `${$scope.path}/${$scope.selectedFileName}`, (err, data) => {
           if (err) return $scope.console('red', err);
           $scope.changeDir();
           $scope.console('green', data.text);
         });
       } else if ($scope.selectedFileType === 1) { // Everything else is folder
-        $scope.ftp.rmr(`${$scope.path}/${$scope.selectedFileName}`, (err) => {
-          $scope.ftp.raw('rmd', `${$scope.path}/${$scope.selectedFileName}`, (err, data) => {
+        ftp.rmr(`${$scope.path}/${$scope.selectedFileName}`, (err) => {
+          ftp.raw('rmd', `${$scope.path}/${$scope.selectedFileName}`, (err, data) => {
             if (err) return $scope.console('red', err);
             $scope.changeDir();
             $scope.console('green', data.text);
@@ -267,7 +273,7 @@
         $scope.fileRenameInput = $scope.selectedFileName;
         $scope.showingRename = true;
       } else {
-        $scope.ftp.rename(`${$scope.path}/${$scope.selectedFileName}`, `${$scope.path}/${$scope.fileRenameInput}`, (err, res) => {
+        ftp.rename(`${$scope.path}/${$scope.selectedFileName}`, `${$scope.path}/${$scope.fileRenameInput}`, (err, res) => {
           if (!err) {
             $scope.showingRename = false;
             $scope.console('green', `Renamed ${$scope.selectedFileName} to ${$scope.fileRenameInput}`);
@@ -327,7 +333,7 @@
       $scope.tempPath = path;
       $scope.gettingDownloadReady = true; // Reset because still working
 
-      $scope.ftp.ls(path, (err, res) => {
+      ftp.ls(path, (err, res) => {
         console.log(res);
         for (let i = 0, item; item = res[i]; i++) {
           if (item.type === 1) { // if folder, push to full array and temp
@@ -373,7 +379,7 @@
         let to = `${$scope.downloadPath}${dirSeperator}${$scope.selectedFileName + newfilepath.replace($scope.selectedFilePath, '')}`;
         $scope.console('white', `Downloading ${filename} to ${$scope.downloadPath}${dirSeperator}${$scope.selectedFileName + newfilepath.replace($scope.selectedFilePath, '')}`);
 
-        $scope.ftp.get(from, to, (hadErr) => {
+        ftp.get(from, to, (hadErr) => {
           if (hadErr) {
             $scope.console('red', `Error downloading ${filename}... ${hadErr}`);
           } else {
@@ -398,7 +404,7 @@
       const from = filepath;
       let to = `${$scope.downloadPath}\\${filename}`;
       console.log(`DOWNLOADING: ${from} TO: ${to}`);
-      $scope.ftp.get(from, to, (hadErr) => {
+      ftp.get(from, to, (hadErr) => {
         if (hadErr) {
           $scope.console('red', `Error downloading ${filename}`);
         } else {
@@ -478,7 +484,7 @@
         $scope.dirToCreate = uploadpath + localpath.replace($scope.baselocalpath, '').replace(/\\/g, '/');
         $scope.console('white', `Creating folder ${$scope.dirToCreate}...`)
 
-        $scope.ftp.raw('mkd', $scope.dirToCreate, (err, data) => {
+        ftp.raw('mkd', $scope.dirToCreate, (err, data) => {
           // $scope.changeDir();
           if (err) {
             $scope.console(err);
@@ -503,7 +509,7 @@
         $scope.fileToUpload = uploadpath + localpath.replace($scope.baselocalpath, '').replace(/\\/g, '/');
         $scope.console('white', `Uploading ${$scope.fileToUpload}...`);
 
-        $scope.ftp.put(localpath, $scope.fileToUpload, (hadError) => {
+        ftp.put(localpath, $scope.fileToUpload, (hadError) => {
           if (!hadError) {
             $scope.console('white', `Successfully uploaded ${localpath} to ${$scope.fileToUpload}`);
           } else {
@@ -550,7 +556,7 @@
 
     // Cancel Operations
     // $scope.cancelFTPOperation = () => {
-    //     $scope.ftp.raw('abor', () => {
+    //     ftp.raw('abor', () => {
     //         $scope.console('red', 'Process aborted.')
     //     });
     // }
