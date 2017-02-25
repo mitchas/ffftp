@@ -127,10 +127,14 @@
       });
 
       ftp.on('error', (data) => {
+        $scope.console('red', data);
+        $scope.emptyMessage = 'Error connecting.'
         console.error(data);
       });
 
       ftp.on('lookup', (data) => {
+        $scope.console('red', `Lookup error: ${data}`);
+        $scope.emptyMessage = 'Error connecting.'
         console.error(`Lookup error: ${data}`);
       });
 
