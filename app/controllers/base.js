@@ -119,7 +119,7 @@
 
       $scope.saveFavorite = false;
 
-      const ftp = new Ftp({
+      ftp = new Ftp({
         host: $scope.ftpHost,
         port: $scope.ftpPort,
         user: $scope.ftpUsername,
@@ -138,14 +138,11 @@
         console.error(`Lookup error: ${data}`);
       });
 
-      ftp.on('client:connected', (connection) => {
-        $scope.console('white', `Connected to ${$scope.ftp.host}`);
-        console.log(connection);
+      $scope.console('white', `Connected to ${ftp.host}`);
 
-        // Start Scripts
-        $scope.changeDir();
-        $scope.splitPath();
-      });
+      // Start Scripts
+      $scope.changeDir();
+      $scope.splitPath();
     };
 
     $scope.saveFavoritesToStorage = () => {
