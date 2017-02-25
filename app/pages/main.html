@@ -75,10 +75,10 @@ MENU
         <div class="ignore" ng-click="showUpdate = false"><i class="ion-close"></i></div>
     </div>
 
-    <form class="connection-form" ng-submit="connect()">
+    <form class="connection-form" ng-submit="connect()" name="hostForm" novalidate>
         <div class="form-row">
             <div class="form-item">
-                <input type="text" ng-model="ftpHost" name="ftp-host" placeholder="ftp.yourwebsite.com">
+                <input type="text" ng-model="ftpHost" name="ftp-host" placeholder="ftp.yourwebsite.com" required>
                 <label for="ftp-host">Host / Server</label>
             </div>
             <div class="form-item">
@@ -109,7 +109,7 @@ MENU
                 </button>
             </div>
             <div class="form-item">
-                <button type="submit">Connect</button>
+                <button type="submit" ng-disabled="hostForm.$invalid">Connect</button>
             </div>
         </div>
 
