@@ -2,7 +2,7 @@
   'use strict';
 
   angular.module('app')
-    .filter('filesizeFilter', fileSizeFilter);
+    .filter('fileSize', fileSizeFilter);
 
   function fileSizeFilter() {
     return (bytes, precision) => {
