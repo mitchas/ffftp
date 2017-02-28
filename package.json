@@ -15,12 +15,6 @@
   "author": "Mitch Samuels",
   "homepage": "https://ffftp.site",
   "devDependencies": {
-    "angular": "^1.5.7",
-    "angular-animate": "^1.5.7",
-    "angular-aria": "^1.5.7",
-    "angular-material": "^1.0.9",
-    "angular-route": "^1.5.7",
-    "asar": "^0.11.0",
     "electron": "^1.4.10",
     "electron-packager": "^7.0.4",
     "grunt": "^1.0.1",
@@ -30,6 +24,12 @@
     "grunt-search": "^0.1.8"
   },
   "dependencies": {
+    "angular": "^1.5.7",
+    "angular-animate": "^1.5.7",
+    "angular-aria": "^1.5.7",
+    "angular-material": "^1.0.9",
+    "angular-route": "^1.5.7",
+    "asar": "^0.11.0",
     "directory-tree": "^1.1.1",
     "electron-json-storage": "^2.1.0",
     "jsftp": "^1.5.5",
