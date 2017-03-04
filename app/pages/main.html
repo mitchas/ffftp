@@ -78,8 +78,8 @@ MENU
     <form class="connection-form" ng-submit="connect()" name="hostForm" novalidate>
         <div class="form-row">
             <div class="form-item">
-                <input type="text" ng-model="ftpHost" name="ftp-host" placeholder="ftp.yourwebsite.com" required>
-                <label for="ftp-host">Host / Server</label>
+                <input type="text" ng-model="ftpHost" name="ftpHost" placeholder="ftp.yourwebsite.com" required>
+                <label for="ftp-host">Host / Server <span ng-if="hostForm.$invalid && hostForm.ftpHost.$touched" class="error">*</span></label>
             </div>
             <div class="form-item">
                 <input type="text" ng-model="ftpUsername" name="ftp-username" placeholder="ftpadmin">
