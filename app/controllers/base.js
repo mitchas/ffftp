@@ -97,6 +97,8 @@
       $scope.ftpUsername = $scope.favorites[index].user;
       $scope.ftpPassword = $scope.favorites[index].pass;
       $scope.favoriteName = $scope.favorites[index].name;
+      if($scope.favorites[index].path != "")
+        $scope.favoritePath = $scope.favorites[index].path;
       $scope.connect();
     };
     $scope.deleteFavorite = (index) => {
@@ -112,6 +114,7 @@
       if ($scope.saveFavorite) {
         $scope.newFavorite = {
           name: $scope.favoriteName,
+          path: $scope.favoritePath,
           host: $scope.ftpHost,
           port: $scope.ftpPort,
           user: $scope.ftpUsername,
@@ -129,6 +132,8 @@
         user: $scope.ftpUsername,
         pass: $scope.ftpPassword
       });
+      if ($scope.favoritePath)
+        $scope.path = `.${$scope.favoritePath}`;
 
       ftp.on('error', (data) => {
         $scope.console('red', data);
