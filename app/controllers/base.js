@@ -13,8 +13,9 @@
     console.log(`Tracking ${visitor}`);
 
     const fs = require('fs');
-    const dirTree = require('directory-tree');
-    
+    // Better FS Watcher
+    var chokidar = require('chokidar');
+
     const JsFtp = require('jsftp'),
       Ftp = require('jsftp-rmr')(JsFtp);
     let ftp;
@@ -140,10 +141,6 @@
         $scope.emptyMessage = 'Error connecting.'
         console.error(`Lookup error: ${data}`);
       });
-
-      ftp.on('data', function (data) {
-        console.log(data);
-      })
 
       $scope.console('white', `Connected to ${ftp.host}`);
 
@@ -279,21 +276,20 @@
           }
         });
         // Watch file for changes
-        fs.watch(localpath, (eventType, filename) => {
-          if (eventType == 'change') {
-            // If file has changed:
-            console.log(`${filename} has changed on disk. Uploading...`);
+        var watcher = chokidar.watch(localpath)
+        watcher.on('change', (path, stats) => {
+          // If file has changed:
+          if (stats) console.log(`${filename} has changed on disk. Size is now ${stats.size}. Uploading...`);
 
-            // Upload file
-            ftp.put(`${$scope.tempPath}\\${filename}`, $scope.editFiles[filename], (hadError) => {
-              if (!hadError) {
-                console.log(`Uploaded ${$scope.tempPath}\\${filename} to ${$scope.editFiles[filename]}`);
-                $scope.console('green', `Uploaded ${filename} from ${$scope.tempPath}\\${filename} to ${$scope.editFiles[filename]}`);
-              } else {
-                $scope.console('red', `Error Uploading ${filename} from ${$scope.tempPath}\\${filename} to ${$scope.editFiles[filename]}`);
-              }
-            });
-          }
+          // Upload file
+          ftp.put(`${$scope.tempPath}\\${filename}`, $scope.editFiles[filename], (hadError) => {
+            if (!hadError) {
+              console.log(`Uploaded ${$scope.tempPath}\\${filename} to ${$scope.editFiles[filename]}`);
+              $scope.console('green', `Uploaded ${filename} from ${$scope.tempPath}\\${filename} to ${$scope.editFiles[filename]}`);
+            } else {
+              $scope.console('red', `Error Uploading ${filename} from ${$scope.tempPath}\\${filename} to ${$scope.editFiles[filename]}`);
+            }
+          });
         });
       }
     };
@@ -563,10 +559,9 @@
           uploadpath = $scope.baseUploadPath;
         $scope.fileToUpload = uploadpath + localpath.replace($scope.baselocalpath, '').replace(/\\/g, '/');
         $scope.console('white', `Uploading ${$scope.fileToUpload}...`);
-        
+
         ftp.put(localpath, $scope.fileToUpload, (hadError) => {
           if (!hadError) {
-            console.log(`${localpath}, ${uploadpath}, ${$scope.fileToUpload}, ${$scope.baseUploadPath}, ${$scope.baselocalpath}`)
             $scope.console('white', `Successfully uploaded ${localpath} to ${$scope.fileToUpload}`);
           } else {
             $scope.console('red', `Error Uploading ${$scope.fileToUpload}`);
