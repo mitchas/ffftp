@@ -279,15 +279,16 @@
         var watcher = chokidar.watch(localpath)
         watcher.on('change', (path, stats) => {
           // If file has changed:
+          var filename = path.replace($scope.tempPath, '').replace(/\\/g, '');
           if (stats) console.log(`${filename} has changed on disk. Size is now ${stats.size}. Uploading...`);
 
           // Upload file
-          ftp.put(`${$scope.tempPath}\\${filename}`, $scope.editFiles[filename], (hadError) => {
+          ftp.put(path, $scope.editFiles[filename], (hadError) => {
             if (!hadError) {
-              console.log(`Uploaded ${$scope.tempPath}\\${filename} to ${$scope.editFiles[filename]}`);
-              $scope.console('green', `Uploaded ${filename} from ${$scope.tempPath}\\${filename} to ${$scope.editFiles[filename]}`);
+              console.log(`Uploaded ${path} to ${$scope.editFiles[filename]}`);
+              $scope.console('green', `Uploaded ${filename} from ${path} to ${$scope.editFiles[filename]}`);
             } else {
-              $scope.console('red', `Error Uploading ${filename} from ${$scope.tempPath}\\${filename} to ${$scope.editFiles[filename]}`);
+              $scope.console('red', `Error Uploading ${filename} from ${path} to ${$scope.editFiles[filename]}`);
             }
           });
         });
