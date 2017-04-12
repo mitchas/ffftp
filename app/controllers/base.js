@@ -248,6 +248,26 @@
       });
     };
 
+    // Create a new file
+    $scope.showingNewFile = false;
+    $scope.newFile = () => {
+      $scope.showingNewFile = false;
+      fs.writeFile(`${$scope.tempPath}\\${$scope.newFileName}`, '', function(err){
+        if(err){
+          console.log(err);
+        }
+
+        ftp.put(`${$scope.tempPath}\\${$scope.newFileName}`, `${$scope.path}/${$scope.newFileName}`, (err, data) => {
+          $scope.newFileName = '';
+          if(err) {
+            $scope.console("red", err);
+          } else {
+            $scope.console("white", data.text);
+          }
+        });
+      });
+    };
+
     // Edit file in an external editor
     $scope.editFile = () => {
       console.log(`TYPE: ${$scope.selectedFileType}`);
@@ -285,7 +305,6 @@
           // Upload file
           ftp.put(path, $scope.editFiles[filename], (hadError) => {
             if (!hadError) {
-              console.log(`Uploaded ${path} to ${$scope.editFiles[filename]}`);
               $scope.console('green', `Uploaded ${filename} from ${path} to ${$scope.editFiles[filename]}`);
             } else {
               $scope.console('red', `Error Uploading ${filename} from ${path} to ${$scope.editFiles[filename]}`);
