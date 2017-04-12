@@ -13,7 +13,8 @@
     console.log(`Tracking ${visitor}`);
 
     const fs = require('fs');
-
+    const dirTree = require('directory-tree');
+    
     const JsFtp = require('jsftp'),
       Ftp = require('jsftp-rmr')(JsFtp);
     let ftp;
@@ -140,6 +141,10 @@
         console.error(`Lookup error: ${data}`);
       });
 
+      ftp.on('data', function (data) {
+        console.log(data);
+      })
+
       $scope.console('white', `Connected to ${ftp.host}`);
 
       // Start Scripts
@@ -257,16 +262,16 @@
         $scope.editFiles[$scope.selectedFileName] = $scope.selectedFilePath;
 
         // Download
-        const from = $scope.selectedFilePath;
-        let to = `${$scope.tempPath}\\${$scope.selectedFileName}`;
-        console.log(`DOWNLOADING: ${from} TO: ${to}`);
-        ftp.get(from, to, (hadErr) => {
+        const remotepath = $scope.selectedFilePath;
+        let localpath = `${$scope.tempPath}\\${$scope.selectedFileName}`;
+        console.log(`DOWNLOADING: ${remotepath} TO: ${localpath}`);
+        ftp.get(remotepath, localpath, (hadErr) => {
           if (hadErr) {
             $scope.console('red', `Error downloading ${$scope.selectedFileName}`);
           } else {
 
             // Open file in the desktop’s default manner
-            if (shell.openItem(to)) {
+            if (shell.openItem(localpath)) {
               $scope.console('white', `Now editing ${$scope.selectedFileName}`);
             } else {
               $scope.console('red', `Can't edit ${$scope.selectedFileName}`)
@@ -274,7 +279,7 @@
           }
         });
         // Watch file for changes
-        fs.watch(to, (eventType, filename) => {
+        fs.watch(localpath, (eventType, filename) => {
           if (eventType == 'change') {
             // If file has changed:
             console.log(`${filename} has changed on disk. Uploading...`);
@@ -558,9 +563,10 @@
           uploadpath = $scope.baseUploadPath;
         $scope.fileToUpload = uploadpath + localpath.replace($scope.baselocalpath, '').replace(/\\/g, '/');
         $scope.console('white', `Uploading ${$scope.fileToUpload}...`);
-
+        
         ftp.put(localpath, $scope.fileToUpload, (hadError) => {
           if (!hadError) {
+            console.log(`${localpath}, ${uploadpath}, ${$scope.fileToUpload}, ${$scope.baseUploadPath}, ${$scope.baselocalpath}`)
             $scope.console('white', `Successfully uploaded ${localpath} to ${$scope.fileToUpload}`);
           } else {
             $scope.console('red', `Error Uploading ${$scope.fileToUpload}`);
