@@ -33,6 +33,7 @@
       dialog = require('electron').dialog;
 
     $scope.path = '.';
+    $scope.tempPath = require('electron').remote.app.getPath("temp");
     $scope.emptyMessage = 'Loading...';
     $scope.fullConsole = false;
     $scope.showingMenu = true;
@@ -43,6 +44,7 @@
     $scope.fileSelected = false;
     $scope.saveFavorite = false;
 
+    $scope.editFiles = {};
 
     const shell = require('electron').shell,
       pjson = require('./package.json');
@@ -242,6 +244,53 @@
           $scope.console("white", data.text);
         }
       });
+    };
+
+    // Edit file in an external editor
+    $scope.editFile = () => {
+      console.log(`TYPE: ${$scope.selectedFileType}`);
+      console.log(`NAME: ${$scope.selectedFileName}`);
+      console.log(`PATH: ${$scope.path}`);
+      console.log(`EDITING ${$scope.path}/${$scope.selectedFileName}`);
+      if ($scope.selectedFileType === 0) {
+        // Save remote file path for uploading
+        $scope.editFiles[$scope.selectedFileName] = $scope.selectedFilePath;
+
+        // Download
+        const from = $scope.selectedFilePath;
+        let to = `${$scope.tempPath}\\${$scope.selectedFileName}`;
+        console.log(`DOWNLOADING: ${from} TO: ${to}`);
+        ftp.get(from, to, (hadErr) => {
+          if (hadErr) {
+            $scope.console('red', `Error downloading ${$scope.selectedFileName}`);
+          } else {
+
+            // Open file in the desktop’s default manner
+            if (shell.openItem(to)) {
+              $scope.console('white', `Now editing ${$scope.selectedFileName}`);
+            } else {
+              $scope.console('red', `Can't edit ${$scope.selectedFileName}`)
+            }
+          }
+        });
+        // Watch file for changes
+        fs.watch(to, (eventType, filename) => {
+          if (eventType == 'change') {
+            // If file has changed:
+            console.log(`${filename} has changed on disk. Uploading...`);
+
+            // Upload file
+            ftp.put(`${$scope.tempPath}\\${filename}`, $scope.editFiles[filename], (hadError) => {
+              if (!hadError) {
+                console.log(`Uploaded ${$scope.tempPath}\\${filename} to ${$scope.editFiles[filename]}`);
+                $scope.console('green', `Uploaded ${filename} from ${$scope.tempPath}\\${filename} to ${$scope.editFiles[filename]}`);
+              } else {
+                $scope.console('red', `Error Uploading ${filename} from ${$scope.tempPath}\\${filename} to ${$scope.editFiles[filename]}`);
+              }
+            });
+          }
+        });
+      }
     };
 
     // Delete a file or folder depending on file type
