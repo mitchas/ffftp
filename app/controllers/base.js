@@ -15,6 +15,7 @@
     const fs = require('fs');
     // Better FS Watcher
     var chokidar = require('chokidar');
+    $scope.watcher = chokidar.watch(); // File Watcher
 
     const JsFtp = require('jsftp'),
       Ftp = require('jsftp-rmr')(JsFtp);
@@ -287,7 +288,10 @@
       console.log(`EDITING ${$scope.path}/${$scope.selectedFileName}`);
       if ($scope.selectedFileType === 0) {
         // Save remote file path for uploading
-        $scope.editFiles[$scope.selectedFileName] = $scope.selectedFilePath;
+        $scope.editFiles[$scope.selectedFileName] = {
+          remotePath: $scope.selectedFilePath,
+          localPath: `${$scope.tempPath}\\${$scope.selectedFileName}`
+        };
 
         // Download
         const remotepath = $scope.selectedFilePath;
@@ -307,19 +311,27 @@
           }
         });
         // Watch file for changes
-        var watcher = chokidar.watch(localpath)
-        watcher.on('change', (path, stats) => {
-          // If file has changed:
-          var filename = path.replace($scope.tempPath, '').replace(/\\/g, '');
-          if (stats) console.log(`${filename} has changed on disk. Size is now ${stats.size}. Uploading...`);
-
-          // Upload file
-          ftp.put(path, $scope.editFiles[filename], (hadError) => {
-            if (!hadError) {
-              $scope.console('green', `Uploaded ${filename} from ${path} to ${$scope.editFiles[filename]}`);
-            } else {
-              $scope.console('red', `Error Uploading ${filename} from ${path} to ${$scope.editFiles[filename]}`);
+        $scope.watcher.add(localpath)
+        $scope.watcher.on("add", (path) => {
+          console.log(`File ${path} has been added`);
+          for(var i = 0; i < $scope.editFiles.length; i++){
+            if($scope.editFiles[i]["localPath"] == path){
+              return;
             }
+          }
+          $scope.watcher.on('change', (path, stats) => {
+            // If file has changed:
+            var filename = path.replace($scope.tempPath, '').replace(/\\/g, '');
+            if (stats) console.log(`${filename} has changed on disk. Size is now ${stats.size}. Uploading...`);
+
+            // Upload file
+            ftp.put(path, $scope.editFiles[filename]["remotePath"], (hadError) => {
+              if (!hadError) {
+                $scope.console('green', `Uploaded ${filename} from ${path} to ${$scope.editFiles[filename]["remotePath"]}`);
+              } else {
+                $scope.console('red', `Error Uploading ${filename} from ${path} to ${$scope.editFiles[filename]}`);
+              }
+            });
           });
         });
       }
