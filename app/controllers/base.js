@@ -165,6 +165,11 @@
       });
     };
 
+    $scope.refresh = () => {
+      $scope.changeDir();
+      $scope.splitPath();
+    };
+
     // Change directory
     $scope.changeDir = () => {
       $scope.searchFiles = '';
@@ -264,6 +269,7 @@
 
         ftp.put(`${$scope.tempPath}\\${$scope.newFileName}`, `${$scope.path}/${$scope.newFileName}`, (err, data) => {
           $scope.newFileName = '';
+          $scope.changeDir();
           if(err) {
             $scope.console("red", err);
           } else {
