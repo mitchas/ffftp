@@ -78,16 +78,20 @@ MENU
     <form class="connection-form" ng-submit="connect()" name="hostForm" novalidate>
         <div class="form-row">
             <div class="form-item">
-                <input type="text" ng-model="ftpHost" name="ftpHost" placeholder="ftp.yourwebsite.com" required>
+                <input id="hostInput" type="text" ng-model="ftpHost" name="ftpHost" placeholder="ftp.yourwebsite.com" required>
                 <label for="ftp-host">Host / Server <span ng-if="hostForm.$invalid && hostForm.ftpHost.$touched" class="error">*</span></label>
             </div>
             <div class="form-item">
                 <input type="text" ng-model="ftpUsername" name="ftp-username" placeholder="ftpadmin">
                 <label for="ftp-username">Username</label>
             </div>
-            <div class="form-item">
+            <div id="passwordInput" class="form-item">
                 <input type="password" ng-model="ftpPassword" name="ftp-password" placeholder="••••••••">
                 <label for="ftp-username">Password</label>
+            </div>
+            <div id="privateKeyInput" class="form-item hidden">
+                <input type="text" ng-model="sftpPrivateKey" name="sftp-publicKey" placeholder="~/.ssh/id_rsa">
+                <label for="sftp-publicKey">Private key uri</label>
             </div>
             <div class="form-item">
                 <input type="number" ng-model="ftpPort" name="ftp-port" placeholder="21">
@@ -141,6 +145,16 @@ MENU
 <!--
     MODALS
  -->
+<div class="rename zoom" ng-show="showingPassphrase">
+    <form ng-submit="connectSsh()">
+        <input type="password" ng-model="sftpPassphrase" name="sftp-paraphrase" show-focus="showingPassphrase" placeholder="Passphrase">
+        <div class="modal-buttons">
+            <button class="cancel" type="button" ng-click="showingPassphrase = false">cancel</button>
+            <button class="proceed" type="submit">connect</button>
+        </div>
+    </form>
+</div>
+
 <div class="rename zoom" ng-show="showingRename">
     <form ng-submit="renameFile()">
         <input type="text" ng-model="fileRenameInput" show-focus="showingRename" placeholder="new name for {{fileRenameInput}}">

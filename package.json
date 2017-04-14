@@ -30,11 +30,12 @@
     "angular-material": "^1.0.9",
     "angular-route": "^1.5.7",
     "asar": "^0.11.0",
-    "directory-tree": "^1.1.1",
+    "directory-tree": "^1.2.1",
     "electron-json-storage": "^2.1.0",
     "jsftp": "^1.5.5",
     "jsftp-rmr": "0.0.1",
     "ng-draggable": "^1.0.0",
+    "node-ssh": "^4.1.0",
     "universal-analytics": "^0.4.8"
   }
 }

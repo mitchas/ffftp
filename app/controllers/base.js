@@ -13,10 +13,18 @@
     console.log(`Tracking ${visitor}`);
 
     const fs = require('fs');
+    const dirTree = require('directory-tree');
 
     const JsFtp = require('jsftp'),
       Ftp = require('jsftp-rmr')(JsFtp);
     let ftp;
+    let ssh;
+
+    var $scopeFtp = {a:"2"};
+    var $scopeSftp = {a:"3"};
+
+    const path = require('path'),
+          node_ssh = require('node-ssh');
 
     // Get computer OS
     const os = require('os');
@@ -92,6 +100,7 @@
       $scope.ftpPort = $scope.favorites[index].port;
       $scope.ftpUsername = $scope.favorites[index].user;
       $scope.ftpPassword = $scope.favorites[index].pass;
+      $scope.sftpPrivateKey = $scope.favorites[index].privateKey;
       $scope.favoriteName = $scope.favorites[index].name;
       $scope.connect();
     };
@@ -99,8 +108,7 @@
       $scope.favorites.splice(index, 1);
       $scope.saveFavoritesToStorage();
     };
-
-
+    
     // Connect to ftp
     $scope.connect = () => {
       $scope.showingMenu = false;
@@ -111,13 +119,25 @@
           host: $scope.ftpHost,
           port: $scope.ftpPort,
           user: $scope.ftpUsername,
-          pass: $scope.ftpPassword
+          pass: $scope.ftpPassword,
+          privateKey: $scope.sftpPrivateKey
         };
         $scope.favorites.push($scope.newFavorite);
         $scope.saveFavoritesToStorage();
       }
 
       $scope.saveFavorite = false;
+
+      if ( $scope.ftpHost.substring(0, 5) == 'sftp.') {
+        $scope.showingPassphrase = true;
+        //$scope.connectSsh();
+      } else {
+        $scope.connectFtp();
+      }
+    }
+
+    $scope.connectFtp = () => {
+      console.log('connection through FTP');
 
       ftp = new Ftp({
         host: $scope.ftpHost,
@@ -138,12 +158,62 @@
         console.error(`Lookup error: ${data}`);
       });
 
+      console.log('Connection Successfull');
       $scope.console('white', `Connected to ${ftp.host}`);
+
+      // Add FTP functions
+      $scope.changeDir = $scopeFtp.changeDir;
+      $scope.newFolder = $scopeFtp.newFolder;
+      $scope.deleteFile = $scopeFtp.deleteFile;
+      $scope.renameFile = $scopeFtp.renameFile;
+      $scope.getDownloadTree = $scopeFtp.getDownloadTree;
+      $scope.saveAllFilesToDisk = $scopeFtp.saveAllFilesToDisk;
+      $scope.saveFileToDisk = $scopeFtp.saveFileToDisk;
+      $scope.mkDirs = $scopeFtp.mkDirs;
+      $scope.upFiles = $scopeFtp.upFiles;
 
       // Start Scripts
       $scope.changeDir();
       $scope.splitPath();
-    };
+    }
+
+    $scope.connectSsh = () => {
+      console.log('connection through sftp')
+
+      $scope.showingPassphrase = false;
+
+      let home = require('os').homedir()
+      let privateKeyUri = $scope.sftpPrivateKey.replace('~', home).replace(/\//g, '\\')
+
+      ssh = new node_ssh()
+      ssh.connect({
+        host: $scope.ftpHost.substring(5),
+        port: $scope.ftpPort,
+        username: $scope.ftpUsername,
+        privateKey: privateKeyUri,
+        passphrase: $scope.sftpPassphrase,
+      }, (err) => {
+        $scope.console('red', err)
+        $scope.emptyMessage = 'Error connecting.'
+      }).then(() => {
+        $scope.console('white', `Connected to ${ssh.connection.config.host}`)
+
+        // Add SFTP functions
+        $scope.changeDir = $scopeSftp.changeDir
+        $scope.newFolder = $scopeSftp.newFolder
+        $scope.deleteFile = $scopeSftp.deleteFile
+        $scope.renameFile = $scopeSftp.renameFile
+        $scope.getDownloadTree = $scopeSftp.getDownloadTree
+        $scope.saveAllFilesToDisk = $scopeSftp.saveAllFilesToDisk
+        $scope.saveFileToDisk = $scopeSftp.saveFileToDisk
+        $scope.mkDirs = $scopeSftp.mkDirs
+        $scope.upFiles = $scopeSftp.upFiles
+
+        // Start Scripts
+        $scope.changeDir()
+        $scope.splitPath()
+      })
+    }
 
     $scope.saveFavoritesToStorage = () => {
       storage.set('favorites', $scope.favorites, (error) => {
@@ -157,7 +227,9 @@
     };
 
     // Change directory
-    $scope.changeDir = () => {
+    $scopeFtp.changeDir = () => {
+      console.log('FTP function changeDir')
+
       $scope.searchFiles = '';
       if ($scope.showCancelOperation) {
         return;
@@ -174,14 +246,72 @@
           }, 0);
         });
       }
-    };
+    }
+
+    $scopeSftp.changeDir = () => {
+      console.log('SFTP function changeDir')
+
+      $scope.searchFiles = ''
+      if ($scope.showCancelOperation) {
+        return
+      } else {
+        ssh.requestSFTP().then((sftp) => {
+          return new Promise((resolve, reject) => {
+            sftp.readdir($scope.path, (err, data) => {
+              sftp.end()
+              if (err) {
+                reject(err)
+              } else {
+                resolve(data)
+              }
+            })
+          })
+        }).then((list) => {
+          //list = list.filter(item => !(/(^|\/)\.[^\/\.]/g).test(item.filename)) // sert à enlever les fichiers cachés
+
+          let newList = []
+          for (let i=0; i < list.length; i++) {
+            let item, type,
+              time = new Date(1970,0,1)
+
+            time.setSeconds(list[i].attrs.mtime)
+            
+            if (list[i].longname[0] == "d") {
+              type = 1
+            } else { 
+              type = 0
+            }
+            item = {
+              name: list[i].filename,
+              size: list[i].attrs.size,
+              time,
+              type
+            }
+            newList.push(item)
+          }
+
+          $timeout(() => {
+            $scope.files = newList
+            $scope.splitPath()
+            $scope.emptyMessage = `There's nothin' here`
+            if ($scope.path !== '.') {
+              $scope.console('white', `Navigated to ${$scope.path}`)
+            }
+          }, 0)
+        })
+      }
+    }
 
     // Go into a directory (double click folder);
     $scope.intoDir = (dir) => {
+      console.log('IntoDir function')
+
       if ($scope.selectedFileType === 0) { // If file, do nothing but select
+        console.log('domage ce nest pas un folder')
         return;
       } else {
         $scope.emptyMessage = 'Loading...';
+        console.log('dir', dir)
         $scope.path = `${$scope.path}/${dir}`;
         $scope.changeDir();
       }
@@ -189,12 +319,16 @@
 
     // Go up a directory - button on nav
     $scope.upDir = () => {
+      console.log('upDir function')
+
       $scope.path = $scope.path.substring(0, $scope.path.lastIndexOf('/'));
       $scope.changeDir();
     };
 
     // Click a breadcrumb to go up multiple directories
     $scope.breadCrumb = (index) => {
+      console.log('breadCrumb function')
+
       $scope.path = '.';
       for (let i = 1; i <= index; i++) {
         $scope.path = `${$scope.path}/${$scope.pathArray[i]}`;
@@ -205,18 +339,25 @@
 
     // Split paths for use in breadcrumbs
     $scope.splitPath = () => {
+      console.log('splitPath function')
+
       $scope.pathArray = new Array();
       $scope.pathArray = $scope.path.split('/');
+      console.log('patharray', $scope.pathArray);
     };
 
     // Select a file to modify
     $scope.selectTimer = () => {
+      console.log('selectTimer function')
+
       $scope.fileToFile = true;
       $timeout(() => {
         $scope.fileToFile = false;
       }, 200);
     };
     $scope.selectFile = (name, filetype) => {
+      console.log('selectFile function')
+
       $scope.fileSelected = true;
       $scope.selectedFileName = name;
       $scope.selectedFileType = filetype;
@@ -229,9 +370,12 @@
       }, 200);
     };
 
-    // Create a new folder
+  // Create a new folder
     $scope.showingNewFolder = false;
-    $scope.newFolder = () => {
+
+    $scopeFtp.newFolder = () => {
+      console.log('FTP newFolder function')
+
       $scope.showingNewFolder = false;
       ftp.raw('mkd', `${$scope.path}/${$scope.newFolderName}`, (err, data) => {
         $scope.changeDir();
@@ -244,32 +388,101 @@
       });
     };
 
+    $scopeSftp.newFolder = () => {
+      console.log('SFTP newFolder function')
+
+      $scope.showingNewFolder = false
+      ssh.requestSFTP().then((sftp) => {
+        return new Promise((resolve, reject) => {
+          sftp.mkdir(`${$scope.path}/${$scope.newFolderName}`, (err) => {
+            sftp.end()
+            if (err) {
+              $scope.console("red", err)
+              reject(err)
+            } else {
+              resolve()
+            }
+          })
+        })
+      }).then(() => {
+        $scope.console("white", `${$scope.path}/${$scope.newFolderName} created`)
+        $scope.changeDir()
+      })
+    }
+
     // Delete a file or folder depending on file type
-    $scope.deleteFile = () => {
-      console.log(`TYPE: ${$scope.selectedFileType}`);
-      console.log(`NAME: ${$scope.selectedFileName}`);
-      console.log(`PATH: ${$scope.path}`);
+    $scopeFtp.deleteFile = () => {
+      console.log('FTP deleteFile function')
+
+      console.log(`TYPE: ${$scope.selectedFileType}`)
+      console.log(`NAME: ${$scope.selectedFileName}`)
+      console.log(`PATH: ${$scope.path}`)
       $scope.showingConfirmDelete = false;
-      console.log(`DELETING ${$scope.path}/${$scope.selectedFileName}`);
+      console.log(`DELETING ${$scope.path}/${$scope.selectedFileName}`)
       if ($scope.selectedFileType === 0) { // 0 is file
         ftp.raw('dele', `${$scope.path}/${$scope.selectedFileName}`, (err, data) => {
-          if (err) return $scope.console('red', err);
-          $scope.changeDir();
-          $scope.console('green', data.text);
-        });
+          if (err) return $scope.console('red', err)
+          $scope.changeDir()
+          $scope.console('green', data.text)
+        })
       } else if ($scope.selectedFileType === 1) { // Everything else is folder
         ftp.rmr(`${$scope.path}/${$scope.selectedFileName}`, (err) => {
           ftp.raw('rmd', `${$scope.path}/${$scope.selectedFileName}`, (err, data) => {
-            if (err) return $scope.console('red', err);
-            $scope.changeDir();
-            $scope.console('green', data.text);
+            if (err) return $scope.console('red', err)
+            $scope.changeDir()
+            $scope.console('green', data.text)
           });
         });
       }
-    };
+    }
+
+    $scopeSftp.deleteFile = () => {
+      console.log('SFTP deleteFile function')
+
+      $scope.showingConfirmDelete = false;
+
+      if ($scope.selectedFileType === 0) { // 0 is file
+
+        ssh.requestSFTP().then((sftp) => {
+          return new Promise((resolve, reject) => {
+            sftp.unlink(`${$scope.path}/${$scope.selectedFileName}`, (err) => {
+              sftp.end()
+              if (err) {
+                $scope.console("red", `Can't removed ${$scope.path}/${$scope.selectedFileName}`)
+                reject(err)
+              } else {
+                resolve()
+              }
+            })
+          })
+        }).then(() => {
+          $scope.console("green", `${$scope.path}/${$scope.selectedFileName} removed`)
+          $scope.changeDir()
+        })
+
+      } else if ($scope.selectedFileType === 1) { // Everything else is folder
+
+        let dirPath = $scope.path.replace(/\//g, `"/"`)
+        dirPath = dirPath + `"`
+        dirPath = dirPath.slice(0, 1) + dirPath.slice(2, dirPath.length)
+        dirPath = `${dirPath}/"${$scope.selectedFileName}"`
+
+        ssh.exec(`rm -rf ${dirPath}`).then((result) => {
+          if (result.stderr) {
+            $scope.console("red", result.stderr)
+          } else {
+            $scope.console("green", `${$scope.path}/${$scope.selectedFileName} removed`)
+          }
+          $scope.changeDir()
+        })
+
+      }
+    }
 
     // Rename a file or folder
-    $scope.renameFile = () => {
+    $scopeFtp.renameFile = () => {
+      console.log('FTP renameFile function')
+
       if (!$scope.showingRename) {
         $scope.fileRenameInput = $scope.selectedFileName;
         $scope.showingRename = true;
@@ -286,17 +499,45 @@
       }
     };
 
+    $scopeSftp.renameFile = () => {
+      console.log('SFTP renameFile function')
+
+      if (!$scope.showingRename) {
+        $scope.fileRenameInput = $scope.selectedFileName
+        $scope.showingRename = true
+      } else {
+        ssh.requestSFTP().then((sftp) => {
+          return new Promise((resolve, reject) => {
+            sftp.rename(`${$scope.path}/${$scope.selectedFileName}`, `${$scope.path}/${$scope.fileRenameInput}`, (err) => {
+              sftp.end()
+              if (err) {
+                $scope.console('red', err)
+                reject(err)
+              } else {
+                resolve()
+              }
+            })
+          })
+        }).then( () => {
+          $scope.showingRename = false
+          $scope.console('green', `Renamed ${$scope.selectedFileName} to ${$scope.fileRenameInput}`)
+          $scope.changeDir()
+        })
+      }
+    }
+
     // Download a file
     $scope.chooseDownloadDirectory = () => {
       document.getElementById('chooseDownloadDirectory').click();
     };
     $scope.saveDownloadPath = () => {
+      console.log('saveDownloadPath function')
       $scope.downloadPath = document.getElementById('chooseDownloadDirectory').files[0].path;
       console.log($scope.downloadPath);
       $scope.downloadFiles();
     };
     $scope.downloadFiles = () => {
-      console.log('downloadFiles');
+      console.log('downloadFiles function');
 
       if ($scope.selectedFileType === 0) { // If file, download right away
         $scope.saveFileToDisk($scope.selectedFilePath, $scope.selectedFileName);
@@ -329,7 +570,9 @@
 
     // Get download tree loops through all folders and files, and adds them to arrays.
     // Current directory folders are added to the tempfolders array
-    $scope.getDownloadTree = (path) => {
+    $scopeFtp.getDownloadTree = (path) => {
+      console.log('FTP getDownloadTree function')
+
       $scope.tempFolders = [];
       $scope.tempPath = path;
       $scope.gettingDownloadReady = true; // Reset because still working
@@ -352,8 +595,45 @@
       });
     };
 
+    $scopeSftp.getDownloadTree = (path) => {
+      console.log('SFTP getDownloadTree function')
+
+      $scope.tempFolders = []
+      $scope.tempPath = path
+      $scope.gettingDownloadReady = true // Reset because still working
+
+      ssh.requestSFTP().then((sftp) => {
+        return new Promise((resolve, reject) => {
+          sftp.readdir(path, (err, res) => {
+            sftp.end()
+            if (err) {
+              reject(err)
+            } else {
+              resolve(res)
+            }
+          })
+        })
+      }).then((res) => {
+        for (let i = 0, item; item = res[i]; i++) {
+          if (item.longname[0] === "d") { // if folder, push to full array and temp
+            $scope.foldersToCreate.push({'path': path, 'name': item.filename})
+            $scope.tempFolders.push({'path': path, 'name': item.filename})
+          } else { // if file, push to file array
+            console.log('path', path, 'name', item.filename)
+            $scope.filesToDownload.push({'path': path, 'name': item.filename})
+          }
+        }
+        $scope.gettingDownloadReady = false
+        for (let x = 0, folder; folder = $scope.tempFolders[x]; x++) { // for each folder, getDownloadTree again and index those. Same process
+          $scope.getDownloadTree(`${folder.path}/${folder.name}`)
+        }
+      })
+    }
+
     // Once getDownloadTree is finished, this is called
     $scope.processFiles = () => {
+      console.log('processFiles function')
+
       //First create base folder
       fs.mkdir(`${$scope.downloadPath}${dirSeperator}${$scope.selectedFileName}`);
       //Then create all folders within
@@ -368,7 +648,9 @@
       $scope.saveAllFilesToDisk();
     };
 
-    $scope.saveAllFilesToDisk = () => {
+    $scopeFtp.saveAllFilesToDisk = () => {
+      console.log('FTP saveAllFilesToDisk function')
+
       if ($scope.filesToDownload[$scope.downloadFileZero]) {
         const filepath = $scope.filesToDownload[$scope.downloadFileZero].path,
           filename = $scope.filesToDownload[$scope.downloadFileZero].name,
@@ -400,8 +682,50 @@
       }
     };
 
+    $scopeSftp.saveAllFilesToDisk = () => {
+      console.log('SFTP saveAllFilesToDisk function')
+
+      if ($scope.filesToDownload[$scope.downloadFileZero]) {
+        const filepath = $scope.filesToDownload[$scope.downloadFileZero].path,
+          filename = $scope.filesToDownload[$scope.downloadFileZero].name,
+          absoluteFilePath = filepath.substring(filepath.indexOf('/') + 1) + '/' + filename
+
+        const from = `${filepath}/${filename}`
+
+        const newfilepath = `${filepath}${dirSeperator}${filename}`
+        let to = `${$scope.downloadPath}${dirSeperator}${$scope.selectedFileName + newfilepath.replace($scope.selectedFilePath, '')}`
+        $scope.console('white', `Downloading ${filename} to ${$scope.downloadPath}${dirSeperator}${$scope.selectedFileName + newfilepath.replace($scope.selectedFilePath, '')}`)
+
+        console.log('scope.selectedFileName', $scope.selectedFileName)
+        console.log('newfilepath', newfilepath)
+        console.log('from', from)
+        console.log('to', to)
+
+        ssh.getFile(to, from).then((data) => {
+          $scope.console("white", 'Done.')
+          $scope.downloadFileZero++
+          $scope.changeDir()
+          $scope.saveAllFilesToDisk() // do it again until all files are downloaded
+        }, (err) => {
+          $scope.console("red", `Error downloading ${filename}... ${err}`)
+          $scope.downloadFileZero++
+          $scope.changeDir()
+          $scope.saveAllFilesToDisk() // do it again until all files are downloaded
+        })
+      } else { // once finished
+        $timeout(() => {
+          $scope.changeDir()
+          $interval.cancel($scope.downloadInterval)
+          $scope.showCancelOperation = false
+          $scope.console("blue", `Downloaded ${$scope.filesToDownload.length} files in ${$scope.foldersToCreate.length} directories in ${$scope.downloadTime} seconds.`)
+        }, 200)
+      }
+    };
+
     // Download file if single file - not folder
-    $scope.saveFileToDisk = (filepath, filename) => {
+    $scopeFtp.saveFileToDisk = (filepath, filename) => {
+      console.log('FTP saveFileToDisk function')
+
       const from = filepath;
       let to = `${$scope.downloadPath}\\${filename}`;
       console.log(`DOWNLOADING: ${from} TO: ${to}`);
@@ -413,6 +737,20 @@
         }
       });
     };
+
+    $scopeSftp.saveFileToDisk = (filepath, filename) => {
+      console.log('SFTP saveFileToDisk function')
+
+      const from = filepath
+      let to = `${$scope.downloadPath}\\${filename}`
+
+      ssh.getFile(to, from).then((data) => {
+        $scope.console("green", `Successfully downloaded ${filename}`)
+      }, (err) => {
+        $scope.console("red", `Error downloading ${filename}`)
+      })
+    }
+
 
     // File Uploading
     document.ondragover = document.ondrop = (ev) => {
@@ -449,12 +787,14 @@
     };
 
     $scope.gatherFiles = (tree) => {
+      console.log('gatherFile function')
+
       if (!tree.length) {
         console.log("No folders");
       }
       $scope.nestedTree = [];
       for (let i = 0, f; f = tree[i]; i++) {
-        if (tree[i].extension) { // if file
+        if (!tree[i].children) { // if file
           $scope.filesArray.push({'name': tree[i].name, 'path': tree[i].path});
         } else { // if folder
           $scope.foldersArray.push({'name': tree[i].name, 'path': tree[i].path});
@@ -470,6 +810,8 @@
     };
 
     $scope.uploadEverything = () => {
+      console.log('uploadEverything function')
+
       console.log($scope.foldersArray);
       console.log($scope.filesArray);
       $scope.console('white', `Uploading ${$scope.foldersArray.length} folders and ${$scope.filesArray.length} files...`);
@@ -477,7 +819,10 @@
       $scope.folderzero = 0;
       $scope.mkDirs();
     };
-    $scope.mkDirs = () => {
+
+    $scopeFtp.mkDirs = () => {
+      console.log('FTP mkDirs function')
+
       if ($scope.foldersArray[$scope.folderzero]) {
         const localpath = $scope.foldersArray[$scope.folderzero].path,
           uploadpath = $scope.baseUploadPath;
@@ -503,7 +848,45 @@
         }, 200);
       }
     };
-    $scope.upFiles = () => {
+
+    $scopeSftp.mkDirs = () => {
+      console.log('SFTP mkDirs function')
+
+      if ($scope.foldersArray[$scope.folderzero]) {
+        const localpath = $scope.foldersArray[$scope.folderzero].path,
+          uploadpath = $scope.baseUploadPath
+
+        $scope.dirToCreate = uploadpath + localpath.replace($scope.baselocalpath, '').replace(/\\/g, '/')
+        $scope.console('white', `Creating folder ${$scope.dirToCreate}...`)
+
+        ssh.requestSFTP().then((sftp) => {
+          return new Promise((resolve, reject) => {
+            sftp.mkdir($scope.dirToCreate, (err) => {
+              sftp.end()
+              if (err) {
+                $scope.console(err)
+                reject(err)
+              } else {
+                $scope.console("created")
+                resolve()
+              }
+            })
+          })
+        }).then(() => {
+          $scope.folderzero++
+          $scope.mkDirs()
+        })
+      } else {
+        $timeout(() => {
+          $scope.changeDir()
+          $scope.upFiles()
+        }, 200)
+      }
+    }
+
+    $scopeFtp.upFiles = () => {
+      console.log('FTP upFiles function')
+
       if ($scope.filesArray[$scope.filezero]) {
         const localpath = $scope.filesArray[$scope.filezero].path,
           uploadpath = $scope.baseUploadPath;
@@ -529,6 +912,37 @@
         }, 200);
       }
     };
+
+    $scopeSftp.upFiles = () => {
+      console.log('SFTP upFiles function')
+
+      if ($scope.filesArray[$scope.filezero]) {
+        const localpath = $scope.filesArray[$scope.filezero].path,
+          uploadpath = $scope.baseUploadPath
+        $scope.fileToUpload = uploadpath + localpath.replace($scope.baselocalpath, '').replace(/\\/g, '/')
+        $scope.console('white', `Uploading ${$scope.fileToUpload}...`)
+
+        ssh.putFile(localpath, $scope.fileToUpload).then((data) => {
+          $scope.console('white', `Successfully uploaded ${localpath} to ${$scope.fileToUpload}`)
+          $scope.filezero++
+          $scope.changeDir()
+          $scope.upFiles()
+        }, (err) => {
+          $scope.console('red', `Error Uploading ${$scope.fileToUpload}`)
+          $scope.filezero++
+          $scope.changeDir()
+          $scope.upFiles()
+        })
+      } else {
+        $timeout(() => {
+          $interval.cancel($scope.uploadInterval)
+          $scope.showCancelOperation = false
+          $scope.changeDir()
+          $scope.console('blue', `File transfer completed in ${$scope.uploadTime} seconds.`)
+        }, 200)
+      }
+    }
+
 
     // Drag to move files
     // Unused for now
@@ -569,6 +983,7 @@
         $timeout(() => {
           console.log('esc pressed');
           if (!$scope.showingRename && !$scope.showingNewFolder && !$scope.showingMenu) $scope.fullConsole = false;
+          $scope.showingPassphrase = false;
           $scope.showingRename = false;
           $scope.showingMenu = false;
           $scope.showingNewFolder = false;
@@ -580,6 +995,25 @@
         }, 0);
       }
     };
+
+    var hostInput = angular.element( document.querySelector('#hostInput') )
+    console.log(hostInput)
+    hostInput.on('input', () => {
+      let passwordInput = angular.element( document.querySelector('#passwordInput') ),
+        privateKeyInput = angular.element( document.querySelector('#privateKeyInput') )
+      console.log('passwordInput', passwordInput)
+      console.log('privateKeyInput', privateKeyInput)
+      console.log(hostInput[0].value.substring(0, 4))
+      if (hostInput[0].value.substring(0, 4) == "sftp") {
+        console.log(true)
+        passwordInput.addClass('hidden')
+        privateKeyInput.removeClass('hidden')
+      } else {
+        console.log(false)
+        passwordInput.removeClass('hidden')
+        privateKeyInput.addClass('hidden')
+      }
+    })
 
     // Electron Menu
     const Menu = remote.Menu;
