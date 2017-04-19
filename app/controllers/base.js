@@ -180,10 +180,10 @@
     $scope.connectSsh = () => {
       console.log('connection through sftp')
 
-      $scope.showingPassphrase = false;
+      $scope.showingPassphrase = false
 
-      let home = require('os').homedir()
-      let privateKeyUri = $scope.sftpPrivateKey.replace('~', home).replace(/\//g, '\\')
+      let home = require('os').homedir(),
+        privateKeyUri = $scope.sftpPrivateKey.replace('~', home).replace(/\//g, dirSeperator)
 
       ssh = new node_ssh()
       ssh.connect({
@@ -276,11 +276,12 @@
 
             time.setSeconds(list[i].attrs.mtime)
             
-            if (list[i].longname[0] == "d") {
+            if (list[i].longname[0] === "d") {
               type = 1
             } else { 
               type = 0
             }
+            
             item = {
               name: list[i].filename,
               size: list[i].attrs.size,
@@ -727,7 +728,7 @@
       console.log('FTP saveFileToDisk function')
 
       const from = filepath;
-      let to = `${$scope.downloadPath}\\${filename}`;
+      let to = `${$scope.downloadPath}${dirSeperator}${filename}`;
       console.log(`DOWNLOADING: ${from} TO: ${to}`);
       ftp.get(from, to, (hadErr) => {
         if (hadErr) {
@@ -742,7 +743,7 @@
       console.log('SFTP saveFileToDisk function')
 
       const from = filepath
-      let to = `${$scope.downloadPath}\\${filename}`
+      let to = `${$scope.downloadPath}${dirSeperator}${filename}`
 
       ssh.getFile(to, from).then((data) => {
         $scope.console("green", `Successfully downloaded ${filename}`)
