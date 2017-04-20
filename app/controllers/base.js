@@ -192,6 +192,7 @@
         username: $scope.ftpUsername,
         privateKey: privateKeyUri,
         passphrase: $scope.sftpPassphrase,
+        tryKeyboard: true
       }, (err) => {
         $scope.console('red', err)
         $scope.emptyMessage = 'Error connecting.'
