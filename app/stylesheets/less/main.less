@@ -89,6 +89,28 @@ div.workspace{
             }
         }
 
+        .ion-android-refresh{
+            display: flex;
+            width: 40px;
+            height: 40px;
+            justify-content: center;
+            flex-direction: column;
+            font-size: 25px;
+            text-align: center;
+            background-color: #FFF;
+            color: #081D38;
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            transition: .2s;
+
+            &:hover{
+                cursor: pointer;
+                color: fade(@black, 50%);
+                transition: @transition;
+            }
+        }
+
         div.dir{
             display: block;
             font-size: 13pt;

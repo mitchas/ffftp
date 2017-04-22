@@ -13,6 +13,9 @@
     console.log(`Tracking ${visitor}`);
 
     const fs = require('fs');
+    // Better FS Watcher
+    var chokidar = require('chokidar');
+    $scope.watcher = chokidar.watch(); // File Watcher
 
     const JsFtp = require('jsftp'),
       Ftp = require('jsftp-rmr')(JsFtp);
@@ -33,6 +36,7 @@
       dialog = require('electron').dialog;
 
     $scope.path = '.';
+    $scope.tempPath = require('electron').remote.app.getPath("temp");
     $scope.emptyMessage = 'Loading...';
     $scope.fullConsole = false;
     $scope.showingMenu = true;
@@ -43,6 +47,7 @@
     $scope.fileSelected = false;
     $scope.saveFavorite = false;
 
+    $scope.editFiles = {};
 
     const shell = require('electron').shell,
       pjson = require('./package.json');
@@ -93,6 +98,8 @@
       $scope.ftpUsername = $scope.favorites[index].user;
       $scope.ftpPassword = $scope.favorites[index].pass;
       $scope.favoriteName = $scope.favorites[index].name;
+      if($scope.favorites[index].path != "")
+        $scope.favoritePath = $scope.favorites[index].path;
       $scope.connect();
     };
     $scope.deleteFavorite = (index) => {
@@ -108,6 +115,7 @@
       if ($scope.saveFavorite) {
         $scope.newFavorite = {
           name: $scope.favoriteName,
+          path: $scope.favoritePath,
           host: $scope.ftpHost,
           port: $scope.ftpPort,
           user: $scope.ftpUsername,
@@ -125,6 +133,8 @@
         user: $scope.ftpUsername,
         pass: $scope.ftpPassword
       });
+      if ($scope.favoritePath)
+        $scope.path = `.${$scope.favoritePath}`;
 
       ftp.on('error', (data) => {
         $scope.console('red', data);
@@ -154,6 +164,11 @@
       storage.clear((error) => {
         if (error) throw error;
       });
+    };
+
+    $scope.refresh = () => {
+      $scope.changeDir();
+      $scope.splitPath();
     };
 
     // Change directory
@@ -241,6 +256,27 @@
         } else {
           $scope.console("white", data.text);
         }
+      });
+    };
+
+    // Create a new file
+    $scope.showingNewFile = false;
+    $scope.newFile = () => {
+      $scope.showingNewFile = false;
+      fs.writeFile(`${$scope.tempPath}\\${$scope.newFileName}`, '', function(err){
+        if(err){
+          console.log(err);
+        }
+
+        ftp.put(`${$scope.tempPath}\\${$scope.newFileName}`, `${$scope.path}/${$scope.newFileName}`, (err, data) => {
+          $scope.newFileName = '';
+          $scope.changeDir();
+          if(err) {
+            $scope.console("red", err);
+          } else {
+            $scope.console("white", data.text);
+          }
+        });
       });
     };
 
