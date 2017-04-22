@@ -17,9 +17,12 @@
                 </span>
             </span>
         </div>
+        
+        <i class="ion-android-refresh" ng-click="refresh()" role="button" tabindex="0"></i>
 
         <div class="workspace-buttons">
             <button ng-click="upDir()" ng-disabled="path == '.'"><i class="ion-android-arrow-dropup-circle"></i> Up</button>
+            <button ng-click="showingNewFile = true"><i class="ion-android-document"></i>New File</button>
             <button ng-click="showingNewFolder = true"><i class="ion-android-folder-open"></i>New Folder</button>
             <button ng-click="editFile()" ng-disabled="!fileSelected"><i class="ion-edit"></i>Edit</button>
             <button ng-click="showingConfirmDelete = true" ng-disabled="!fileSelected && !confirmingDelete"><i class="ion-trash-a"></i>Delete</button>
@@ -101,6 +104,10 @@ MENU
                 <input type="text" ng-model="favoriteName" name="favoritename" placeholder="mywebsite.com">
                 <label for="favorite-name">Favorite Name</label>
             </div>
+            <div class="form-item">
+                <input type="text" ng-model="favoritePath" name="favoritepath" placeholder="/website">
+                <label for="favorite-path">Favorite Default-Path (optional)</label>
+            </div>
         </div>
 
         <div class="form-row flex-end">
@@ -161,6 +168,17 @@ MENU
         </div>
     </form>
 </div>
+
+<div class="newfile zoom" ng-show="showingNewFile">
+  <form ng-submit="newFile()">
+    <input type="text" ng-model="newFileName" placeholder="new file name" show-focus="showingNewFile">
+    <div class="modal-buttons">
+      <button class="cancel" type="button" ng-click="showingNewFile = false">cancel</button>
+      <button class="proceed" type="submit">create</button>
+    </div>
+  </form>
+</div>
+
 
 <div class="confirmdelete zoom" ng-show="showingConfirmDelete">
     <form ng-submit="deleteFile()">

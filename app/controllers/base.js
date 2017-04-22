@@ -13,6 +13,9 @@
     console.log(`Tracking ${visitor}`);
 
     const fs = require('fs');
+    // Better FS Watcher
+    var chokidar = require('chokidar');
+    $scope.watcher = chokidar.watch(); // File Watcher
 
     const JsFtp = require('jsftp'),
       Ftp = require('jsftp-rmr')(JsFtp);
@@ -95,6 +98,8 @@
       $scope.ftpUsername = $scope.favorites[index].user;
       $scope.ftpPassword = $scope.favorites[index].pass;
       $scope.favoriteName = $scope.favorites[index].name;
+      if($scope.favorites[index].path != "")
+        $scope.favoritePath = $scope.favorites[index].path;
       $scope.connect();
     };
     $scope.deleteFavorite = (index) => {
@@ -110,6 +115,7 @@
       if ($scope.saveFavorite) {
         $scope.newFavorite = {
           name: $scope.favoriteName,
+          path: $scope.favoritePath,
           host: $scope.ftpHost,
           port: $scope.ftpPort,
           user: $scope.ftpUsername,
@@ -127,6 +133,8 @@
         user: $scope.ftpUsername,
         pass: $scope.ftpPassword
       });
+      if ($scope.favoritePath)
+        $scope.path = `.${$scope.favoritePath}`;
 
       ftp.on('error', (data) => {
         $scope.console('red', data);
@@ -156,6 +164,11 @@
       storage.clear((error) => {
         if (error) throw error;
       });
+    };
+
+    $scope.refresh = () => {
+      $scope.changeDir();
+      $scope.splitPath();
     };
 
     // Change directory
@@ -246,27 +259,45 @@
       });
     };
 
+    // Create a new file
+    $scope.showingNewFile = false;
+    $scope.newFile = () => {
+      $scope.showingNewFile = false;
+      fs.writeFile(`${$scope.tempPath}\\${$scope.newFileName}`, '', function(err){
+        if(err){
+          console.log(err);
+        }
+
+        ftp.put(`${$scope.tempPath}\\${$scope.newFileName}`, `${$scope.path}/${$scope.newFileName}`, (err, data) => {
+          $scope.newFileName = '';
+          $scope.changeDir();
+          if(err) {
+            $scope.console("red", err);
+          } else {
+            $scope.console("white", data.text);
+          }
+        });
+      });
+    };
+
     // Edit file in an external editor
     $scope.editFile = () => {
-      console.log(`TYPE: ${$scope.selectedFileType}`);
-      console.log(`NAME: ${$scope.selectedFileName}`);
-      console.log(`PATH: ${$scope.path}`);
-      console.log(`EDITING ${$scope.path}/${$scope.selectedFileName}`);
       if ($scope.selectedFileType === 0) {
-        // Save remote file path for uploading
-        $scope.editFiles[$scope.selectedFileName] = $scope.selectedFilePath;
+        // Save remote and local file path for later
+        $scope.editFiles[$scope.selectedFileName] = {
+          remotePath: $scope.selectedFilePath,
+          localPath: `${$scope.tempPath}\\${$scope.selectedFileName}`
+        };
 
-        // Download
-        const from = $scope.selectedFilePath;
-        let to = `${$scope.tempPath}\\${$scope.selectedFileName}`;
-        console.log(`DOWNLOADING: ${from} TO: ${to}`);
-        ftp.get(from, to, (hadErr) => {
+        // Download file
+        const remotepath = $scope.selectedFilePath;
+        let localpath = `${$scope.tempPath}\\${$scope.selectedFileName}`;
+        ftp.get(remotepath, localpath, (hadErr) => {
           if (hadErr) {
             $scope.console('red', `Error downloading ${$scope.selectedFileName}`);
           } else {
-
             // Open file in the desktop’s default manner
-            if (shell.openItem(to)) {
+            if (shell.openItem(localpath)) {
               $scope.console('white', `Now editing ${$scope.selectedFileName}`);
             } else {
               $scope.console('red', `Can't edit ${$scope.selectedFileName}`)
@@ -274,21 +305,28 @@
           }
         });
         // Watch file for changes
-        fs.watch(to, (eventType, filename) => {
-          if (eventType == 'change') {
-            // If file has changed:
-            console.log(`${filename} has changed on disk. Uploading...`);
+        $scope.watcher.add(localpath);
+        $scope.watcher.on("add", (path) => {
+          // Check if event is already registered
+          for(var i = 0; i < $scope.editFiles.length; i++){
+            if($scope.editFiles[i]["localPath"] == path){
+              return;
+            }
+          }
+          $scope.watcher.on('change', (path, stats) => {
+            // If file has changed...
+            var filename = path.replace($scope.tempPath, '').replace(/\\/g, '');
 
             // Upload file
-            ftp.put(`${$scope.tempPath}\\${filename}`, $scope.editFiles[filename], (hadError) => {
+            ftp.put(path, $scope.editFiles[filename]["remotePath"], (hadError) => {
               if (!hadError) {
-                console.log(`Uploaded ${$scope.tempPath}\\${filename} to ${$scope.editFiles[filename]}`);
-                $scope.console('green', `Uploaded ${filename} from ${$scope.tempPath}\\${filename} to ${$scope.editFiles[filename]}`);
+                $scope.console('green', `Uploaded ${filename}`);
               } else {
-                $scope.console('red', `Error Uploading ${filename} from ${$scope.tempPath}\\${filename} to ${$scope.editFiles[filename]}`);
+                $scope.console('red', `Error Uploading ${filename}`);
               }
-            });
-          }
+              
+            }); 
+          });
         });
       }
     };
