@@ -24,7 +24,6 @@
             <button ng-click="upDir()" ng-disabled="path == '.'"><i class="ion-android-arrow-dropup-circle"></i> Up</button>
             <button ng-click="showingNewFile = true"><i class="ion-android-document"></i>New File</button>
             <button ng-click="showingNewFolder = true"><i class="ion-android-folder-open"></i>New Folder</button>
-            <button ng-click="editFile()" ng-disabled="!fileSelected"><i class="ion-edit"></i>Edit</button>
             <button ng-click="showingConfirmDelete = true" ng-disabled="!fileSelected && !confirmingDelete"><i class="ion-trash-a"></i>Delete</button>
             <button ng-click="chooseDownloadDirectory()" ng-disabled="!fileSelected"><i class="ion-android-download"></i>Download</button>
             <button ng-click="renameFile()" ng-disabled="!fileSelected"><i class="ion-edit"></i>Rename</button>

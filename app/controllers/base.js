@@ -280,57 +280,6 @@
       });
     };
 
-    // Edit file in an external editor
-    $scope.editFile = () => {
-      if ($scope.selectedFileType === 0) {
-        // Save remote and local file path for later
-        $scope.editFiles[$scope.selectedFileName] = {
-          remotePath: $scope.selectedFilePath,
-          localPath: `${$scope.tempPath}\\${$scope.selectedFileName}`
-        };
-
-        // Download file
-        const remotepath = $scope.selectedFilePath;
-        let localpath = `${$scope.tempPath}\\${$scope.selectedFileName}`;
-        ftp.get(remotepath, localpath, (hadErr) => {
-          if (hadErr) {
-            $scope.console('red', `Error downloading ${$scope.selectedFileName}`);
-          } else {
-            // Open file in the desktop’s default manner
-            if (shell.openItem(localpath)) {
-              $scope.console('white', `Now editing ${$scope.selectedFileName}`);
-            } else {
-              $scope.console('red', `Can't edit ${$scope.selectedFileName}`)
-            }
-          }
-        });
-        // Watch file for changes
-        $scope.watcher.add(localpath);
-        $scope.watcher.on("add", (path) => {
-          // Check if event is already registered
-          for(var i = 0; i < $scope.editFiles.length; i++){
-            if($scope.editFiles[i]["localPath"] == path){
-              return;
-            }
-          }
-          $scope.watcher.on('change', (path, stats) => {
-            // If file has changed...
-            var filename = path.replace($scope.tempPath, '').replace(/\\/g, '');
-
-            // Upload file
-            ftp.put(path, $scope.editFiles[filename]["remotePath"], (hadError) => {
-              if (!hadError) {
-                $scope.console('green', `Uploaded ${filename}`);
-              } else {
-                $scope.console('red', `Error Uploading ${filename}`);
-              }
-              
-            }); 
-          });
-        });
-      }
-    };
-
     // Delete a file or folder depending on file type
     $scope.deleteFile = () => {
       console.log(`TYPE: ${$scope.selectedFileType}`);
