@@ -5,12 +5,13 @@
     .controller('homeCtrl', homeController);
 
   /* @ngInject */
-  function homeController($scope, $timeout, $filter, $interval, ngDraggable, $http) {
+  function homeController($scope, $timeout, $interval, $http) {
     // Analytics setup (https://github.com/peaksandpies/universal-analytics)
     const ua = require('universal-analytics'),
       visitor = ua('UA-88669012-1');
-    visitor.pageview('/').send();
-    console.log(`Tracking ${visitor}`);
+    // REENAVBLE FOR LIVE
+    // visitor.pageview('/').send();
+    // console.log(`Tracking ${visitor}`);
 
     const fs = require('fs');
 
@@ -698,6 +699,6 @@
     Menu.setApplicationMenu(menu);
   }
 
-  homeController.$inject = ['$scope', '$timeout', '$filter', '$interval', 'ngDraggable', '$http'];
+  homeController.$inject = ['$scope', '$timeout', '$interval', '$http'];
 })();
 
