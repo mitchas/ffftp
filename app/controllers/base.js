@@ -2,15 +2,15 @@
   'use strict';
 
   angular.module('app')
-    .controller('homeCtrl', homeController);
+    .controller('homeCtrl', ['$scope', '$timeout', '$interval', '$http', 'konsoleService', homeController]);
 
-  /* @ngInject */
-  function homeController($scope, $timeout, $filter, $interval, ngDraggable, $http) {
+  function homeController($scope, $timeout, $interval, $http, konsoleService) {
     // Analytics setup (https://github.com/peaksandpies/universal-analytics)
     const ua = require('universal-analytics'),
       visitor = ua('UA-88669012-1');
-    visitor.pageview('/').send();
-    console.log(`Tracking ${visitor}`);
+    // REENAVBLE FOR LIVE
+    // visitor.pageview('/').send();
+    // console.log(`Tracking ${visitor}`);
 
     const fs = require('fs');
 
@@ -36,7 +36,7 @@
     $scope.emptyMessage = 'Loading...';
     $scope.fullConsole = false;
     $scope.showingMenu = true;
-    $scope.consoleMessage = 'Click to expand console.';
+    konsoleService.addMessage('Click to expand console.');
 
     $scope.editingFavorites = false;
 
@@ -127,18 +127,18 @@
       });
 
       ftp.on('error', (data) => {
-        $scope.console('red', data);
+        konsoleService.addMessage('red', data);
         $scope.emptyMessage = 'Error connecting.'
         console.error(data);
       });
 
       ftp.on('lookup', (data) => {
-        $scope.console('red', `Lookup error: ${data}`);
+        konsoleService.addMessage('red', `Lookup error: ${data}`);
         $scope.emptyMessage = 'Error connecting.'
         console.error(`Lookup error: ${data}`);
       });
 
-      $scope.console('white', `Connected to ${ftp.host}`);
+      konsoleService.addMessage('white', `Connected to ${ftp.host}`);
 
       // Start Scripts
       $scope.changeDir();
@@ -169,7 +169,7 @@
             $scope.splitPath();
             $scope.emptyMessage = `There's nothin' here`;
             if ($scope.path !== '.') {
-              $scope.console('white', `Navigated to ${$scope.path}`);
+              konsoleService.addMessage('white', `Navigated to ${$scope.path}`);
             }
           }, 0);
         });
@@ -237,9 +237,9 @@
         $scope.changeDir();
         $scope.newFolderName = '';
         if (err) {
-          $scope.console("red", err);
+          konsoleService.addMessage("red", err);
         } else {
-          $scope.console("white", data.text);
+          konsoleService.addMessage("white", data.text);
         }
       });
     };
@@ -253,16 +253,16 @@
       console.log(`DELETING ${$scope.path}/${$scope.selectedFileName}`);
       if ($scope.selectedFileType === 0) { // 0 is file
         ftp.raw('dele', `${$scope.path}/${$scope.selectedFileName}`, (err, data) => {
-          if (err) return $scope.console('red', err);
+          if (err) return konsoleService.addMessage('red', err);
           $scope.changeDir();
-          $scope.console('green', data.text);
+          konsoleService.addMessage('green', data.text);
         });
       } else if ($scope.selectedFileType === 1) { // Everything else is folder
         ftp.rmr(`${$scope.path}/${$scope.selectedFileName}`, (err) => {
           ftp.raw('rmd', `${$scope.path}/${$scope.selectedFileName}`, (err, data) => {
-            if (err) return $scope.console('red', err);
+            if (err) return konsoleService.addMessage('red', err);
             $scope.changeDir();
-            $scope.console('green', data.text);
+            konsoleService.addMessage('green', data.text);
           });
         });
       }
@@ -277,10 +277,10 @@
         ftp.rename(`${$scope.path}/${$scope.selectedFileName}`, `${$scope.path}/${$scope.fileRenameInput}`, (err, res) => {
           if (!err) {
             $scope.showingRename = false;
-            $scope.console('green', `Renamed ${$scope.selectedFileName} to ${$scope.fileRenameInput}`);
+            konsoleService.addMessage('green', `Renamed ${$scope.selectedFileName} to ${$scope.fileRenameInput}`);
             $scope.changeDir();
           } else {
-            $scope.console('red', err);
+            konsoleService.addMessage('red', err);
           }
         });
       }
@@ -312,7 +312,7 @@
         $scope.gettingDownloadReady = true;
         $scope.watchDownloadProcess();
       } else { // else unknown file type
-        $scope.console('red', `Unable to download file ${$scope.selectedFileName}. Unknown file type.`);
+        konsoleService.addMessage('red', `Unable to download file ${$scope.selectedFileName}. Unknown file type.`);
       }
     };
 
@@ -378,13 +378,13 @@
 
         const newfilepath = `${filepath}${dirSeperator}${filename}`;
         let to = `${$scope.downloadPath}${dirSeperator}${$scope.selectedFileName + newfilepath.replace($scope.selectedFilePath, '')}`;
-        $scope.console('white', `Downloading ${filename} to ${$scope.downloadPath}${dirSeperator}${$scope.selectedFileName + newfilepath.replace($scope.selectedFilePath, '')}`);
+        konsoleService.addMessage('white', `Downloading ${filename} to ${$scope.downloadPath}${dirSeperator}${$scope.selectedFileName + newfilepath.replace($scope.selectedFilePath, '')}`);
 
         ftp.get(from, to, (hadErr) => {
           if (hadErr) {
-            $scope.console('red', `Error downloading ${filename}... ${hadErr}`);
+            konsoleService.addMessage('red', `Error downloading ${filename}... ${hadErr}`);
           } else {
-            $scope.console('white', 'Done.');
+            konsoleService.addMessage('white', 'Done.');
           }
           $scope.downloadFileZero++;
           $scope.changeDir();
@@ -395,7 +395,7 @@
           $scope.changeDir();
           $interval.cancel($scope.downloadInterval);
           $scope.showCancelOperation = false;
-          $scope.console('blue', `Downloaded ${$scope.filesToDownload.length} files in ${$scope.foldersToCreate.length} directories in ${$scope.downloadTime} seconds.`);
+          konsoleService.addMessage('blue', `Downloaded ${$scope.filesToDownload.length} files in ${$scope.foldersToCreate.length} directories in ${$scope.downloadTime} seconds.`);
         }, 200);
       }
     };
@@ -407,9 +407,9 @@
       console.log(`DOWNLOADING: ${from} TO: ${to}`);
       ftp.get(from, to, (hadErr) => {
         if (hadErr) {
-          $scope.console('red', `Error downloading ${filename}`);
+          konsoleService.addMessage('red', `Error downloading ${filename}`);
         } else {
-          $scope.console('green', `Successfully downloaded ${filename}`);
+          konsoleService.addMessage('green', `Successfully downloaded ${filename}`);
         }
       });
     };
@@ -421,7 +421,7 @@
     document.body.ondrop = (ev) => {
       $scope.dragged = ev.dataTransfer.files;
 
-      $scope.console('white', 'Getting file tree...');
+      konsoleService.addMessage('white', 'Getting file tree...');
       $scope.folderTree = [];
       $scope.baseUploadPath = $scope.path;
 
@@ -472,7 +472,7 @@
     $scope.uploadEverything = () => {
       console.log($scope.foldersArray);
       console.log($scope.filesArray);
-      $scope.console('white', `Uploading ${$scope.foldersArray.length} folders and ${$scope.filesArray.length} files...`);
+      konsoleService.addMessage('white', `Uploading ${$scope.foldersArray.length} folders and ${$scope.filesArray.length} files...`);
       $scope.filezero = 0;
       $scope.folderzero = 0;
       $scope.mkDirs();
@@ -483,15 +483,15 @@
           uploadpath = $scope.baseUploadPath;
 
         $scope.dirToCreate = uploadpath + localpath.replace($scope.baselocalpath, '').replace(/\\/g, '/');
-        $scope.console('white', `Creating folder ${$scope.dirToCreate}...`)
+        konsoleService.addMessage('white', `Creating folder ${$scope.dirToCreate}...`)
 
         ftp.raw('mkd', $scope.dirToCreate, (err, data) => {
           // $scope.changeDir();
           if (err) {
-            $scope.console(err);
+            konsoleService.addMessage(err);
           }
           else {
-            $scope.console(data.text);
+            konsoleService.addMessage(data.text);
           }
           $scope.folderzero++;
           $scope.mkDirs();
@@ -508,13 +508,13 @@
         const localpath = $scope.filesArray[$scope.filezero].path,
           uploadpath = $scope.baseUploadPath;
         $scope.fileToUpload = uploadpath + localpath.replace($scope.baselocalpath, '').replace(/\\/g, '/');
-        $scope.console('white', `Uploading ${$scope.fileToUpload}...`);
+        konsoleService.addMessage('white', `Uploading ${$scope.fileToUpload}...`);
 
         ftp.put(localpath, $scope.fileToUpload, (hadError) => {
           if (!hadError) {
-            $scope.console('white', `Successfully uploaded ${localpath} to ${$scope.fileToUpload}`);
+            konsoleService.addMessage('white', `Successfully uploaded ${localpath} to ${$scope.fileToUpload}`);
           } else {
-            $scope.console('red', `Error Uploading ${$scope.fileToUpload}`);
+            konsoleService.addMessage('red', `Error Uploading ${$scope.fileToUpload}`);
           }
           $scope.filezero++;
           $scope.changeDir();
@@ -525,7 +525,7 @@
           $interval.cancel($scope.uploadInterval);
           $scope.showCancelOperation = false;
           $scope.changeDir();
-          $scope.console('blue', `File transfer completed in ${$scope.uploadTime} seconds.`);
+          konsoleService.addMessage('blue', `File transfer completed in ${$scope.uploadTime} seconds.`);
         }, 200);
       }
     };
@@ -538,29 +538,6 @@
     $scope.onDropComplete = (path) => {
       console.log(`MOVE TO: ${path}`);
     };
-
-    // Console controls
-    $scope.consoleMessages = [];
-    $scope.consoleUnread = 0;
-    $scope.console = (color, msg) => {
-      $timeout(() => {
-        $scope.consoleMessageClass = color;
-        $scope.consoleMessage = msg;
-        $scope.consoleMessages.push({'color': color, 'message': msg});
-        $scope.consoleUnread++;
-      }, 0);
-    };
-    $scope.openConsole = () => {
-      $scope.consoleUnread = 0;
-      $scope.fullConsole = true;
-    };
-
-    // Cancel Operations
-    // $scope.cancelFTPOperation = () => {
-    //     ftp.raw('abor', () => {
-    //         $scope.console('red', 'Process aborted.')
-    //     });
-    // }
 
     // Keyboard Shortcuts
     window.document.onkeydown = (e) => {
@@ -584,7 +561,7 @@
     // Electron Menu
     const Menu = remote.Menu;
 
-    var template = [
+    const template = [
       {
         label: 'ffftp',
         submenu: [{
@@ -697,7 +674,5 @@
     const menu = Menu.buildFromTemplate(template);
     Menu.setApplicationMenu(menu);
   }
-
-  homeController.$inject = ['$scope', '$timeout', '$filter', '$interval', 'ngDraggable', '$http'];
 })();
 
