@@ -1,10 +1,10 @@
-<div class="console-preview {{ messageClass }} slideBottom" ng-show="!fullConsole" ng-click="openConsole()">
-  <span class="message"><i class="ion-code-working"></i> {{ message }}</span>
-  <span class="console-unread">{{ unread }}</span>
+<div class="console-preview {{ konsole.messageClass }} slideBottom" ng-show="!konsole.fullConsole" ng-click="konsole.openConsole()">
+  <span class="message"><i class="ion-code-working"></i> {{ konsole.message }}</span>
+  <span class="console-unread">{{ konsole.unread }}</span>
 </div>
-<div class="console slideBottom" ng-show="fullConsole">
-  <div class="console-minimize" ng-click="fullConsole = false"><i class="ion-android-arrow-dropdown"></i></div>
+<div class="console slideBottom" ng-show="konsole.fullConsole">
+  <div class="console-minimize" ng-click="konsole.fullConsole = false"><i class="ion-android-arrow-dropdown"></i></div>
   <div class="console-messages">
-    <div class="line {{ line.color }}" ng-repeat="line in messages track by $index">{{ line.message }}</div>
+    <div class="line {{ line.color }}" ng-repeat="line in konsole.messages track by $index">{{ line.message }}</div>
   </div>
 </div>
