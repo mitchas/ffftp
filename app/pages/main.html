@@ -171,18 +171,19 @@ MENU
     </form>
 </div>
 
+<konsole></konsole>
 
 <!-- Cancel any operation -->
 <!-- <div class="cancel-operation ng-fade" ng-class="{withconsole : fullConsole}" ng-show="showCancelOperation" ng-click="cancelFTPOperation()">Cancel Operation</div> -->
 
 <!-- Consoles -->
-<div class="console-preview {{consoleMessageClass}} slideBottom" ng-show="!fullConsole" ng-click="openConsole()">
-    <span class="message"><i class="ion-code-working"></i> {{consoleMessage}}</span>
-    <span class="console-unread">{{consoleUnread}}</span>
-</div>
-<div class="console slideBottom" ng-show="fullConsole">
-    <div class="console-minimize" ng-click="fullConsole = false"><i class="ion-android-arrow-dropdown"></i></div>
-    <div class="console-messages">
-        <div class="line {{line.color}}" ng-repeat="line in consoleMessages track by $index">{{line.message}}</div>
-    </div>
-</div>
+<!--<div class="console-preview {{consoleMessageClass}} slideBottom" ng-show="!fullConsole" ng-click="openConsole()">-->
+    <!--<span class="message"><i class="ion-code-working"></i> {{consoleMessage}}</span>-->
+    <!--<span class="console-unread">{{consoleUnread}}</span>-->
+<!--</div>-->
+<!--<div class="console slideBottom" ng-show="fullConsole">-->
+    <!--<div class="console-minimize" ng-click="fullConsole = false"><i class="ion-android-arrow-dropdown"></i></div>-->
+    <!--<div class="console-messages">-->
+        <!--<div class="line {{line.color}}" ng-repeat="line in consoleMessages track by $index">{{line.message}}</div>-->
+    <!--</div>-->
+<!--</div>-->
