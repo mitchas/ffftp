@@ -2,15 +2,10 @@
   'use strict';
 
   angular.module('app')
-    .controller('homeCtrl', ['$scope', '$timeout', '$interval', '$http', 'konsoleService', homeController]);
+    .controller('homeCtrl', ['$scope', '$timeout', '$interval', '$http', 'konsoleService', 'analyticsService', homeController]);
 
-  function homeController($scope, $timeout, $interval, $http, konsoleService) {
-    // Analytics setup (https://github.com/peaksandpies/universal-analytics)
-    const ua = require('universal-analytics'),
-      visitor = ua('UA-88669012-1');
-    // REENAVBLE FOR LIVE
-    // visitor.pageview('/').send();
-    // console.log(`Tracking ${visitor}`);
+  function homeController($scope, $timeout, $interval, $http, konsoleService, analyticsService) {
+    analyticsService.track('/');
 
     const fs = require('fs');
 

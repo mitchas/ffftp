@@ -9,6 +9,7 @@
           controller: 'homeCtrl'
         })
         .otherwise({redirectTo: '/'});
-    }]);
+    }])
+    .constant('PROD', false);
 })();
 
