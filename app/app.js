@@ -1,4 +1,4 @@
-(function () {
+(function (angular) {
   'use strict';
 
   angular.module('app', ['ngRoute', 'ngMaterial', 'ngAnimate', 'ngDraggable'])
@@ -11,5 +11,5 @@
         .otherwise({redirectTo: '/'});
     }])
     .constant('PROD', false);
-})();
+})(angular);
 
