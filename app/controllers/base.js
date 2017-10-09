@@ -1,4 +1,4 @@
-(function() {
+(function (angular) {
   'use strict';
 
   angular.module('app')
@@ -669,5 +669,5 @@
     const menu = Menu.buildFromTemplate(template);
     Menu.setApplicationMenu(menu);
   }
-})();
+})(angular);
 

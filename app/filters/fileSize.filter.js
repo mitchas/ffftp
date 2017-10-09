@@ -1,4 +1,4 @@
-(function () {
+(function (angular) {
   'use strict';
 
   angular.module('app')
@@ -14,4 +14,4 @@
       return (bytes / Math.pow(1024, Math.floor(number))).toFixed(precision) + ' ' + units[number];
     };
   }
-})();
+})(angular);
