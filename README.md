@@ -1,6 +1,14 @@
-# FTP file manager built on Electron & Node
+![N|Solid](https://raw.githubusercontent.com/mitchas/ffftp/master/app/visuals/icon200.png)
+# **FFFTP**
+A minimal FTP manager built on Electron.
+  - Explore files
+  - Move, delete, upload files
+  - Drag and drop
+  - Save connection to favorites
 
-_There are still a few issues_
+# Not maintained!*****
+
+I haven't worked ont this for a while. I may get back into it, but maybe not. Feel free to check out the forks. **It does still work, though.**
 
 ## Building & running it locally:
 - Clone the repo.
